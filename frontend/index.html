@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Refinery.io - A premium cybernetic web scraper dashboard and data refinery interface.">
+    <title>Refinery.io // Web Scraper Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Outfit:wght@100..900&family=Share+Tech+Mono&family=Syne:wght@400..800&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- CRT Overlay effect for cyber terminal vibe -->
+        <div class="crt-overlay"></div>
+        <div class="crt-scanline"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="brand">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>REFINERY<span>.IO</span></h1>
+                    <span class="sub-brand">DATA EXTRACTION SUITE</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="dashboard">
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    Dashboard
+                </button>
+                <button class="nav-item" data-tab="builder">
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                    Scraper Builder
+                </button>
+                <button class="nav-item" data-tab="runs">
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    Refinery Jobs
+                </button>
+                <button class="nav-item" data-tab="explorer">
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Data Explorer
+                </button>
+                <button class="nav-item" data-tab="scheduler">
+                    <svg class="nav-icon" viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    Schedules
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="system-status">
+                    <span class="status-pulse pulse-green"></span>
+                    <div class="status-details">
+                        <span class="status-label">REFINERY SYSTEM STATE</span>
+                        <span class="status-value">ONLINE / SYNCED</span>
+                    </div>
+                </div>
+                <div class="system-stats-compact">
+                    <div class="stat-comp">
+                        <span>CPU</span>
+                        <span>12.4%</span>
+                    </div>
+                    <div class="stat-comp">
+                        <span>MEM</span>
+                        <span>428MB</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Body -->
+        <main class="app-main">
+            <!-- Header Banner -->
+            <header class="app-header">
+                <div class="header-left">
+                    <h2 id="current-tab-title">Refinery Dashboard</h2>
+                    <p id="current-tab-desc" class="header-sub">Operational status, extraction health, and rapid configuration panels.</p>
+                </div>
+                <div class="header-right">
+                    <div class="quick-agent-selector">
+                        <label for="active-scraper-select">CRAWLER NODE:</label>
+                        <select id="active-scraper-select">
+                            <option value="ecommerce">E-Commerce Prices (Product Scraper)</option>
+                            <option value="news">Global News Feed Crawler</option>
+                            <option value="custom" selected>+ Create New Extraction Node</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" id="btn-global-trigger">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        EXECUTE CRAWL
+                    </button>
+                </div>
+            </header>
+
+            <!-- Metrics Strip -->
+            <section class="metrics-grid">
+                <div class="metric-card glow-blue">
+                    <div class="metric-title">
+                        <span>BANDWIDTH INGESTION</span>
+                        <span class="stat-pill text-blue">LIVE</span>
+                    </div>
+                    <div class="metric-val">124.8<span class="metric-unit">KB/s</span></div>
+                    <div class="metric-trend">
+                        <span class="trend-up">+14.2% from yesterday</span>
+                    </div>
+                    <div class="metric-bg-bar"><div class="bar-fill blue-fill" style="width: 65%;"></div></div>
+                </div>
+                <div class="metric-card glow-green">
+                    <div class="metric-title">
+                        <span>RECORDS REFINED</span>
+                        <span class="stat-pill text-green">TOTAL</span>
+                    </div>
+                    <div class="metric-val" id="stats-records-scraped">84,912</div>
+                    <div class="metric-trend">
+                        <span class="trend-up">+3,204 in last 24h</span>
+                    </div>
+                    <div class="metric-bg-bar"><div class="bar-fill green-fill" style="width: 82%;"></div></div>
+                </div>
+                <div class="metric-card glow-amber">
+                    <div class="metric-title">
+                        <span>SUCCESS RATE</span>
+                        <span class="stat-pill text-amber">99.8%</span>
+                    </div>
+                    <div class="metric-val" id="stats-success-rate">99.84<span class="metric-unit">%</span></div>
+                    <div class="metric-trend">
+                        <span class="trend-stable">Stable pipeline latency</span>
+                    </div>
+                    <div class="metric-bg-bar"><div class="bar-fill amber-fill" style="width: 99.8%;"></div></div>
+                </div>
+                <div class="metric-card glow-red">
+                    <div class="metric-title">
+                        <span>ACTIVE SCHEDULERS</span>
+                        <span class="stat-pill text-red">ONLINE</span>
+                    </div>
+                    <div class="metric-val">4<span class="metric-unit">AGENTS</span></div>
+                    <div class="metric-trend">
+                        <span class="trend-down">0 connection timeouts</span>
+                    </div>
+                    <div class="metric-bg-bar"><div class="bar-fill red-fill" style="width: 40%;"></div></div>
+                </div>
+            </section>
+
+            <!-- TAB CONTENT PANELS -->
+            <div class="tab-contents-container">
+
+                <!-- 1. DASHBOARD TAB -->
+                <section class="tab-pane active" id="tab-dashboard">
+                    <div class="dashboard-layout">
+                        <!-- Left Panel: Pipeline Summary & System Logs -->
+                        <div class="dash-left flex-column gap-lg">
+                            <div class="panel-card glass">
+                                <div class="card-header">
+                                    <div class="title-with-subtitle">
+                                        <h3>REFINERY PIPELINE ACTIVITY</h3>
+                                        <span>System ingestion and pipeline performance monitor</span>
+                                    </div>
+                                    <div class="time-range-toggle">
+                                        <button class="active">24h</button>
+                                        <button>7d</button>
+                                        <button>30d</button>
+                                    </div>
+                                </div>
+                                <div class="card-content">
+                                    <!-- Beautiful Visual Ingestion Chart Mock -->
+                                    <div class="mock-chart-container">
+                                        <div class="chart-y-axis">
+                                            <span>20k r/s</span>
+                                            <span>15k r/s</span>
+                                            <span>10k r/s</span>
+                                            <span>5k r/s</span>
+                                            <span>0 r/s</span>
+                                        </div>
+                                        <div class="chart-bars-wrap">
+                                            <div class="chart-bar" style="--height: 40%"><div class="bar-tooltip">4,203 recs</div></div>
+                                            <div class="chart-bar" style="--height: 55%"><div class="bar-tooltip">6,521 recs</div></div>
+                                            <div class="chart-bar" style="--height: 35%"><div class="bar-tooltip">3,492 recs</div></div>
+                                            <div class="chart-bar" style="--height: 78%"><div class="bar-tooltip">12,501 recs</div></div>
+                                            <div class="chart-bar" style="--height: 90%"><div class="bar-tooltip">15,310 recs</div></div>
+                                            <div class="chart-bar active" style="--height: 65%"><div class="bar-tooltip">10,912 recs (Live)</div></div>
+                                            <div class="chart-bar" style="--height: 45%"><div class="bar-tooltip">5,123 recs</div></div>
+                                            <div class="chart-bar" style="--height: 70%"><div class="bar-tooltip">11,200 recs</div></div>
+                                            <div class="chart-bar" style="--height: 85%"><div class="bar-tooltip">14,923 recs</div></div>
+                                            <div class="chart-bar" style="--height: 60%"><div class="bar-tooltip">9,820 recs</div></div>
+                                        </div>
+                                    </div>
+                                    <div class="chart-legends">
+                                        <div class="legend-item"><span class="legend-color bg-green"></span> Ingested Nodes</div>
+                                        <div class="legend-item"><span class="legend-color bg-blue"></span> Active Stream</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel-card glass flex-1">
+                                <div class="card-header">
+                                    <div class="title-with-subtitle">
+                                        <h3>RECENTLY COMPLETED JOBS</h3>
+                                        <span>Historical reports from crawler schedules</span>
+                                    </div>
+                                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('runs')">View All</button>
+                                </div>
+                                <div class="card-content">
+                                    <div class="jobs-list-simple">
+                                        <div class="job-list-item">
+                                            <div class="job-id-cell">
+                                                <span class="status-indicator success"></span>
+                                                <span class="job-name">Product Price Watcher</span>
+                                                <span class="job-hash">#849-c1</span>
+                                            </div>
+                                            <div class="job-stats-cell">
+                                                <span>428 urls</span>
+                                                <span>9.2 sec</span>
+                                            </div>
+                                            <div class="job-time-cell">5 minutes ago</div>
+                                        </div>
+                                        <div class="job-list-item">
+                                            <div class="job-id-cell">
+                                                <span class="status-indicator success"></span>
+                                                <span class="job-name">Tech News Feed Scraper</span>
+                                                <span class="job-hash">#849-c0</span>
+                                            </div>
+                                            <div class="job-stats-cell">
+                                                <span>12 urls</span>
+                                                <span>1.4 sec</span>
+                                            </div>
+                                            <div class="job-time-cell">1 hour ago</div>
+                                        </div>
+                                        <div class="job-list-item">
+                                            <div class="job-id-cell">
+                                                <span class="status-indicator failed"></span>
+                                                <span class="job-name">Crypto Price Tracker</span>
+                                                <span class="job-hash">#848-x9</span>
+                                            </div>
+                                            <div class="job-stats-cell">
+                                                <span>0 urls</span>
+                                                <span>12.5 sec</span>
+                                            </div>
+                                            <div class="job-time-cell">3 hours ago</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Crawler Node Controller & Engine Stats -->
+                        <div class="dash-right flex-column gap-lg">
+                            <div class="panel-card glass panel-terminal-wrap">
+                                <div class="card-header border-bottom-none">
+                                    <div class="title-with-subtitle">
+                                        <h3>ENGINE LOG STREAM</h3>
+                                        <span>Real-time crawler debug output</span>
+                                    </div>
+                                    <div class="terminal-badge">SYS_REF_v1.0</div>
+                                </div>
+                                <div class="card-content padding-none flex-1 flex-column">
+                                    <div class="terminal-window">
+                                        <div class="terminal-screen" id="dash-terminal-logs">
+                                            <p class="term-log-line info"><span class="term-time">[13:01:21]</span> [SYSTEM] Refinery Node initialized successfully.</p>
+                                            <p class="term-log-line info"><span class="term-time">[13:01:22]</span> [LOADER] Configuration parameters loaded (2 active modules).</p>
+                                            <p class="term-log-line warn"><span class="term-time">[13:01:30]</span> [CRAWLER] Port 9091 redirected. SSL Handshake default enabled.</p>
+                                            <p class="term-log-line success"><span class="term-time">[13:01:45]</span> [SYSTEM] Refinery daemon listening for scrape instruction...</p>
+                                            <p class="term-log-line"><span class="term-cursor">_</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel-card glass">
+                                <div class="card-header">
+                                    <h3>QUICK CRAWL PIPELINE</h3>
+                                </div>
+                                <div class="card-content flex-column gap-md">
+                                    <div class="form-group-custom">
+                                        <label>TARGET URL GATEWAY</label>
+                                        <div class="input-with-btn">
+                                            <input type="text" id="quick-url-input" value="https://news.ycombinator.com" placeholder="https://domain.com/target-path">
+                                            <button class="btn btn-primary btn-sm" id="btn-quick-run">ENGAGE</button>
+                                        </div>
+                                    </div>
+                                    <p class="input-desc-text">Performs a single-level DOM ingestion using default text heuristics.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. SCRAPER BUILDER TAB -->
+                <section class="tab-pane" id="tab-builder">
+                    <div class="builder-layout">
+                        <!-- Left Column: Config Panel -->
+                        <div class="builder-sidebar flex-column gap-lg">
+                            <div class="panel-card glass">
+                                <div class="card-header">
+                                    <h3>EXTRACTION AGENT OVERVIEW</h3>
+                                </div>
+                                <div class="card-content flex-column gap-md">
+                                    <div class="form-row-2">
+                                        <div class="form-group-custom">
+                                            <label>CRAWLER IDENTIFIER</label>
+                                            <input type="text" id="builder-scraper-name" value="Custom E-Commerce List">
+                                        </div>
+                                        <div class="form-group-custom">
+                                            <label>REQUEST METHOD</label>
+                                            <select id="builder-request-method">
+                                                <option value="GET">GET (Standard Page)</option>
+                                                <option value="POST">POST (API Hook)</option>
+                                                <option value="PUPPETEER">JS-Render (Browser Emulation)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group-custom">
+                                        <label>TARGET URL</label>
+                                        <input type="url" id="builder-scraper-url" value="https://example-shopping-site.com/products">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Selector Schema Builder -->
+                            <div class="panel-card glass flex-1 flex-column">
+                                <div class="card-header">
+                                    <div class="title-with-subtitle">
+                                        <h3>SELECTOR SCHEMA FIELDS</h3>
+                                        <span>Configure layout mapping structures for data extraction</span>
+                                    </div>
+                                    <button class="btn btn-secondary btn-sm" id="btn-add-selector-field">+ Add Field</button>
+                                </div>
+                                <div class="card-content flex-1 overflow-y-auto" id="selector-fields-list">
+                                    <!-- Dynamic fields go here -->
+                                </div>
+                            </div>
+
+                            <!-- HTTP Headers/Cookies configuration modal-style section -->
+                            <div class="panel-card glass">
+                                <div class="card-header">
+                                    <h3>HTTP CONFIGURATION</h3>
+                                </div>
+                                <div class="card-content flex-column gap-sm">
+                                    <div class="collapsible-section-toggle">
+                                        <span>Custom Headers (User-Agent, Cookies, Proxy)</span>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </div>
+                                    <div class="collapsible-content flex-column gap-md">
+                                        <div class="form-group-custom">
+                                            <label>USER AGENT STRING</label>
+                                            <input type="text" id="builder-ua" value="Mozilla/5.0 (Windows NT 10.0; Win64; x64) RefineryScraper/1.0">
+                                        </div>
+                                        <div class="form-group-custom">
+                                            <label>PROXY SERVER IP</label>
+                                            <input type="text" id="builder-proxy" placeholder="http://proxy-address:port">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Visual Selector Preview Canvas & Run Terminal -->
+                        <div class="builder-main flex-column gap-lg">
+                            <div class="panel-card glass flex-1 flex-column">
+                                <div class="card-header border-bottom-none">
+                                    <div class="title-with-subtitle">
+                                        <h3>INTERACTIVE LIVE WEB VIEWER</h3>
+                                        <span>Select elements in the layout below to construct extraction selectors.</span>
+                                    </div>
+                                    <div class="viewer-actions">
+                                        <span class="badge badge-success">Target Loaded Successfully</span>
+                                        <button class="btn btn-secondary btn-sm" id="btn-reload-iframe">RELOAD CANVAS</button>
+                                    </div>
+                                </div>
+                                <div class="card-content padding-none flex-1 flex-column relative overflow-hidden">
+                                    <!-- Visual Preview Canvas (Mock iframe DOM visualization) -->
+                                    <div class="visual-canvas-container" id="visual-dom-canvas">
+                                        <!-- Simulated target web page layout -->
+                                        <div class="mock-browser-header">
+                                            <div class="browser-dots">
+                                                <span></span><span></span><span></span>
+                                            </div>
+                                            <div class="browser-url-bar">
+                                                https://example-shopping-site.com/products
+                                            </div>
+                                        </div>
+                                        <div class="mock-browser-viewport">
+                                            <!-- Interactive mock DOM -->
+                                            <header class="mock-page-header">
+                                                <h3>TechGear Electronics Store</h3>
+                                                <p>Hot summer deals on computing and media hardware</p>
+                                            </header>
+                                            <div class="mock-product-grid">
+                                                <div class="mock-product-card dom-element" data-selector=".product-card" data-element-id="card-1">
+                                                    <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231b263b'/><circle cx='50' cy='50' r='25' fill='%2364dfdf'/></svg>" class="mock-prod-img dom-element" data-selector=".product-card img" data-element-id="img-1" alt="Product image">
+                                                    <div class="mock-product-info">
+                                                        <h4 class="mock-prod-title dom-element" data-selector=".product-card .product-title" data-element-id="title-1">Quantum X-200 Headset</h4>
+                                                        <p class="mock-prod-desc dom-element" data-selector=".product-card .description" data-element-id="desc-1">Ultra bass spatial audio with active noise cancelation capabilities.</p>
+                                                        <div class="mock-product-footer">
+                                                            <span class="mock-prod-price dom-element" data-selector=".product-card .price" data-element-id="price-1">$149.99</span>
+                                                            <span class="mock-prod-badge dom-element" data-selector=".product-card .stock-tag" data-element-id="stock-1">In Stock</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mock-product-card dom-element" data-selector=".product-card" data-element-id="card-2">
+                                                    <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231b263b'/><circle cx='50' cy='50' r='25' fill='%23560bad'/></svg>" class="mock-prod-img dom-element" data-selector=".product-card img" data-element-id="img-2" alt="Product image">
+                                                    <div class="mock-product-info">
+                                                        <h4 class="mock-prod-title dom-element" data-selector=".product-card .product-title" data-element-id="title-2">Vortex-8 Mechanical Keyboard</h4>
+                                                        <p class="mock-prod-desc dom-element" data-selector=".product-card .description" data-element-id="desc-2">RGB backlit tactile brown switches, sturdy aluminum framework.</p>
+                                                        <div class="mock-product-footer">
+                                                            <span class="mock-prod-price dom-element" data-selector=".product-card .price" data-element-id="price-2">$89.50</span>
+                                                            <span class="mock-prod-badge dom-element" data-selector=".product-card .stock-tag" data-element-id="stock-2">Low Stock</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mock-product-card dom-element" data-selector=".product-card" data-element-id="card-3">
+                                                    <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231b263b'/><circle cx='50' cy='50' r='25' fill='%23f72585'/></svg>" class="mock-prod-img dom-element" data-selector=".product-card img" data-element-id="img-3" alt="Product image">
+                                                    <div class="mock-product-info">
+                                                        <h4 class="mock-prod-title dom-element" data-selector=".product-card .product-title" data-element-id="title-3">Horizon WideScreen Monitor 27"</h4>
+                                                        <p class="mock-prod-desc dom-element" data-selector=".product-card .description" data-element-id="desc-3">4K UHD IPS display, 144Hz refresh rate, thin bezels design.</p>
+                                                        <div class="mock-product-footer">
+                                                            <span class="mock-prod-price dom-element" data-selector=".product-card .price" data-element-id="price-3">$329.99</span>
+                                                            <span class="mock-prod-badge dom-element" data-selector=".product-card .stock-tag" data-element-id="stock-3">Out of Stock</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Tooltip hover visual indicator -->
+                                    <div class="visual-dom-tooltip" id="dom-selector-tooltip">div.product-card > h4.mock-prod-title</div>
+                                </div>
+                            </div>
+
+                            <!-- Execution Console -->
+                            <div class="panel-card glass panel-console-console">
+                                <div class="card-header border-bottom-none">
+                                    <div class="title-with-subtitle">
+                                        <h3>CRAWLER SIMULATED CONSOLE LOG</h3>
+                                        <span>Click "TEST RUN CRAWLER" to activate process</span>
+                                    </div>
+                                    <div class="console-controls">
+                                        <button class="btn btn-secondary btn-sm" id="btn-clear-console">Clear</button>
+                                        <button class="btn btn-primary btn-sm btn-glow-active" id="btn-builder-test-run">
+                                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                            TEST RUN CRAWLER
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-content padding-none">
+                                    <div class="terminal-window height-180">
+                                        <div class="terminal-screen" id="builder-terminal-logs">
+                                            <p class="term-log-line info"><span class="term-time">[Refinery Console Initialization Finished]</span></p>
+                                            <p class="term-log-line info">Ready to process schema fields map... Select an active DOM element or construct CSS path queries.</p>
+                                            <p class="term-log-line"><span class="term-cursor">_</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. REFINERY JOBS TAB -->
+                <section class="tab-pane" id="tab-runs">
+                    <div class="runs-layout flex-column gap-lg">
+                        <div class="panel-card glass">
+                            <div class="card-header">
+                                <div class="title-with-subtitle">
+                                    <h3>ACTIVE & HISTORICAL PIPELINE RUNS</h3>
+                                    <span>Detailed audit trails and records status monitors</span>
+                                </div>
+                                <div class="runs-filter-bar">
+                                    <input type="text" class="input-search-small" id="runs-search" placeholder="Search by Job ID or URL...">
+                                    <select id="filter-runs-status">
+                                        <option value="ALL">All States</option>
+                                        <option value="SUCCESS">Success</option>
+                                        <option value="RUNNING">Refining</option>
+                                        <option value="FAILED">Terminated / Failed</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="card-content padding-none">
+                                <table class="table-custom" id="runs-history-table">
+                                    <thead>
+                                        <tr>
+                                            <th>JOB HASH</th>
+                                            <th>NODE IDENTIFIER</th>
+                                            <th>STATUS</th>
+                                            <th>INGESTED URL</th>
+                                            <th>PROCESSED</th>
+                                            <th>LATENCY</th>
+                                            <th>COMPLETED</th>
+                                            <th>ACTIONS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Table content dynamically injected -->
+                                        <tr>
+                                            <td class="mono">#849-c1</td>
+                                            <td>Product Price Watcher</td>
+                                            <td><span class="badge badge-success">Success</span></td>
+                                            <td class="mono truncate-url">https://example-shopping-site.com/products</td>
+                                            <td>428 Items</td>
+                                            <td>9.2s</td>
+                                            <td>Just Now</td>
+                                            <td>
+                                                <button class="btn btn-secondary btn-xs btn-view-run-logs" data-job="#849-c1">LOGS</button>
+                                                <button class="btn btn-secondary btn-xs btn-view-run-data">DATA</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="mono">#849-c0</td>
+                                            <td>Tech News Feed Scraper</td>
+                                            <td><span class="badge badge-success">Success</span></td>
+                                            <td class="mono truncate-url">https://news.ycombinator.com</td>
+                                            <td>12 Items</td>
+                                            <td>1.4s</td>
+                                            <td>1 hour ago</td>
+                                            <td>
+                                                <button class="btn btn-secondary btn-xs btn-view-run-logs" data-job="#849-c0">LOGS</button>
+                                                <button class="btn btn-secondary btn-xs btn-view-run-data">DATA</button>
+                                            </td>
+                                        </tr>
+                                        <tr class="failed-row">
+                                            <td class="mono">#848-x9</td>
+                                            <td>Crypto Price Tracker</td>
+                                            <td><span class="badge badge-error">Failed</span></td>
+                                            <td class="mono truncate-url">https://api.coingecko.com/v3/coins/list</td>
+                                            <td>0 Items</td>
+                                            <td>12.5s</td>
+                                            <td>3 hours ago</td>
+                                            <td>
+                                                <button class="btn btn-secondary btn-xs btn-view-run-logs" data-job="#848-x9">LOGS</button>
+                                                <button class="btn btn-secondary btn-xs btn-view-run-data" disabled>DATA</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Expanded Job Logs Modal-style console -->
+                        <div class="panel-card glass" id="detailed-log-panel" style="display: none;">
+                            <div class="card-header border-bottom-none">
+                                <div class="title-with-subtitle">
+                                    <h3>DETAILED REPORT LOG: <span id="active-job-details-title">#849-c1</span></h3>
+                                    <span>Terminal recording snapshot</span>
+                                </div>
+                                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('detailed-log-panel').style.display='none'">CLOSE AUDIT VIEW</button>
+                            </div>
+                            <div class="card-content padding-none">
+                                <div class="terminal-window height-220">
+                                    <div class="terminal-screen" id="audit-terminal-screen">
+                                        <!-- Interactive Logs injected dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. DATA EXPLORER TAB -->
+                <section class="tab-pane" id="tab-explorer">
+                    <div class="explorer-layout">
+                        <!-- Left Panel: Data Grid -->
+                        <div class="explorer-grid flex-column gap-lg">
+                            <div class="panel-card glass flex-1 flex-column">
+                                <div class="card-header">
+                                    <div class="title-with-subtitle">
+                                        <h3>REFINED EXTRACTION RECORDS</h3>
+                                        <span>Tabular view of ingested targets database</span>
+                                    </div>
+                                    <div class="explorer-actions">
+                                        <button class="btn btn-secondary btn-sm" id="btn-export-csv">
+                                            EXPORT CSV
+                                        </button>
+                                        <button class="btn btn-secondary btn-sm" id="btn-export-json">
+                                            EXPORT JSON
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-content padding-none flex-1 overflow-x-auto">
+                                    <table class="table-custom" id="explorer-data-table">
+                                        <thead>
+                                            <!-- Dynamically generated headers -->
+                                        </thead>
+                                        <tbody>
+                                            <!-- Dynamically generated data -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Data JSON Viewer -->
+                        <div class="explorer-preview flex-column gap-lg">
+                            <div class="panel-card glass flex-1 flex-column">
+                                <div class="card-header">
+                                    <h3>RAW JSON EXPORT STREAM</h3>
+                                </div>
+                                <div class="card-content padding-none flex-1 flex-column">
+                                    <pre class="json-renderer-block" id="explorer-json-preview">
+// Load data by running scraper or selecting template crawler nodes...
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. SCHEDULER TAB -->
+                <section class="tab-pane" id="tab-scheduler">
+                    <div class="scheduler-layout">
+                        <div class="scheduler-settings flex-column gap-lg">
+                            <div class="panel-card glass">
+                                <div class="card-header">
+                                    <h3>ADD NEW CRAWL ROUTINE</h3>
+                                </div>
+                                <div class="card-content flex-column gap-md">
+                                    <div class="form-group-custom">
+                                        <label>CRAWLER TARGET</label>
+                                        <select id="schedule-node-select">
+                                            <option value="ecommerce">E-Commerce Prices (Product Scraper)</option>
+                                            <option value="news">Global News Feed Crawler</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-custom">
+                                        <label>INTERVAL CRON PATTERN</label>
+                                        <input type="text" id="schedule-cron" value="0 */3 * * *">
+                                        <span class="input-desc-text">Syntaxes follow cron formatting: Min, Hour, DayOfMonth, Month, DayOfWeek.</span>
+                                    </div>
+                                    <div class="form-group-custom">
+                                        <label>CONCURRENCY LIMIT</label>
+                                        <input type="number" id="schedule-concurrency" value="5" min="1" max="20">
+                                    </div>
+                                    <button class="btn btn-primary" id="btn-schedule-create">ACTIVATE SCHEDULE</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="scheduler-list flex-column gap-lg">
+                            <div class="panel-card glass flex-1">
+                                <div class="card-header">
+                                    <h3>ACTIVE SCHEDULERS</h3>
+                                </div>
+                                <div class="card-content padding-none">
+                                    <table class="table-custom" id="schedules-table">
+                                        <thead>
+                                            <tr>
+                                                <th>CRAWLER NODE</th>
+                                                <th>CRON PATTERN</th>
+                                                <th>NEXT EXECUTION</th>
+                                                <th>CONCURRENCY</th>
+                                                <th>STATUS</th>
+                                                <th>ACTIONS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Product Price Watcher</td>
+                                                <td class="mono">0 */6 * * *</td>
+                                                <td>In 2h 14m</td>
+                                                <td>5</td>
+                                                <td><span class="badge badge-success">ACTIVE</span></td>
+                                                <td><button class="btn btn-secondary btn-xs">SUSPEND</button></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Global News Feed Crawler</td>
+                                                <td class="mono">*/30 * * * *</td>
+                                                <td>In 12m</td>
+                                                <td>2</td>
+                                                <td><span class="badge badge-success">ACTIVE</span></td>
+                                                <td><button class="btn btn-secondary btn-xs">SUSPEND</button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</body>
+<!-- Application Logic -->
+<script src="app.js"></script>
+</html>
