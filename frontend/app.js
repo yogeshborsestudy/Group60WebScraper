@@ -7,6 +7,14 @@
 (function () {
     'use strict';
 
+    // ── Theme Init & Toggle ──
+    const themeToggle = document.getElementById('theme-toggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+
+    if (currentTheme === 'light') {
+        document.body.classList.add('light-theme');
+    }
+
     // ── DOM Refs ──
     const inputUrl       = document.getElementById('input-url');
     const btnInvestigate = document.getElementById('btn-investigate');
@@ -144,11 +152,12 @@
     }
 
     function heatColor(val) {
-        if (val <= 20) return '#ef4444';
-        if (val <= 35) return '#f97316';
-        if (val <= 55) return '#eab308';
-        if (val <= 75) return '#84cc16';
-        return '#22c55e';
+        const isLight = document.body.classList.contains('light-theme');
+        if (val <= 20) return isLight ? '#dc2626' : '#ef4444';
+        if (val <= 35) return isLight ? '#ea580c' : '#f97316';
+        if (val <= 55) return isLight ? '#ca8a04' : '#eab308';
+        if (val <= 75) return isLight ? '#65a30d' : '#84cc16';
+        return isLight ? '#16a34a' : '#22c55e';
     }
 
     function stockClass(s) {
@@ -409,5 +418,33 @@
     inputUrl.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') runInvestigation();
     });
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function () {
+            document.body.classList.toggle('light-theme');
+            const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+            localStorage.setItem('theme', theme);
+
+            // Update dynamic visual element colors immediately
+            const scoreText = scoreValue.textContent;
+            if (scoreText && scoreText !== '—') {
+                const score = parseInt(scoreText, 10);
+                if (!isNaN(score)) {
+                    scoreArc.style.stroke = heatColor(score);
+                }
+            }
+            
+            ['domain', 'content', 'transparency', 'reputation'].forEach(function (key) {
+                const fill = heatFills[key];
+                const valEl = heatVals[key];
+                if (fill && valEl && valEl.textContent !== '—') {
+                    const val = parseInt(valEl.textContent, 10);
+                    if (!isNaN(val)) {
+                        fill.style.background = heatColor(val);
+                        valEl.style.color = heatColor(val);
+                    }
+                }
+            });
+        });
+    }
 
 })();
