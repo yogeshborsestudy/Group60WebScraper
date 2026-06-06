@@ -1251,8 +1251,8 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
 ::selection {
-    background: var(--accent-dim);
-    color: var(--text-primary);
+    background: var(--accent);
+    color: var(--text-inverse);
 }
 
 /* ============================================================
