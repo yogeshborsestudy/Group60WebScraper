@@ -117,7 +117,8 @@ function buildUserPrompt(data) {
 Website URL: ${data.url}
 Page count: ${data.pageCount}
 Tech stack: ${data.techStack}
-SSL: ${data.sslStatus}
+SSL Basic Status: ${data.sslStatus}
+SSL Certificate Info: ${data.sslResult ? JSON.stringify(data.sslResult, null, 2) : 'No detailed SSL check available'}
 Contact page found: ${data.contactPageFound}
 Physical address: ${data.physicalAddress || 'Not found'}
 Social links: ${data.socialLinks}
@@ -160,7 +161,7 @@ Return ONLY this exact JSON structure (no text outside it):
       "registrar": <string or null>,
       "contact_page": <"Found"|"Not found">,
       "page_count": <string, e.g. "22 pages crawled">,
-      "ssl_status": <string>,
+      "ssl_status": <string, summarizing status, issuer, and days left, e.g., "Valid (Cloudflare, 84 days left)" or "Expired" or "No HTTPS detected">,
       "whois_data": <string or null>,
       "social_links": <string>,
       "tech_stack": <string>

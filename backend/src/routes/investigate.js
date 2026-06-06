@@ -8,6 +8,7 @@ const router = express.Router();
 const firecrawlService = require('../services/firecrawl');
 const openaiService = require('../services/openai');
 const supabaseService = require('../services/supabase');
+const sslChecker = require('../services/sslChecker');
 
 /**
  * Validate that a string is a valid URL
@@ -125,11 +126,20 @@ router.post('/investigate', async (req, res) => {
       return res.json({ cached: true, data: normalized });
     }
 
-    // ── 3. Scrape with Firecrawl ──
-    console.log(`[Investigate] No cache hit. Starting Firecrawl investigation...`);
+    // ── 3. Scrape with Firecrawl and check SSL in parallel ──
+    console.log(`[Investigate] No cache hit. Starting Firecrawl and SSL investigations...`);
     let scrapedData;
+    let sslResult;
     try {
-      scrapedData = await firecrawlService.investigateSite(trimmedUrl);
+      const results = await Promise.all([
+        firecrawlService.investigateSite(trimmedUrl),
+        sslChecker.checkSSL(trimmedUrl)
+      ]);
+      scrapedData = results[0];
+      sslResult = results[1];
+      
+      // Attach SSL check result to scrapedData to pass it down the pipeline
+      scrapedData.sslResult = sslResult;
     } catch (err) {
       console.error(`[Investigate] Firecrawl error:`, err.message);
       return res.status(502).json({
