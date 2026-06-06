@@ -1122,21 +1122,21 @@ body {
    LIGHT THEME OVERRIDES
    ============================================================ */
 body.light-theme {
-    --bg-base:       #f3f4f6;
-    --bg-raised:     #ffffff;
-    --bg-surface:    #e5e7eb;
-    --bg-hover:      #f3f4f6;
-    --bg-input:      #f9fafb;
+    --bg-base:       #e2e8f0; /* Slate-200: significantly darker base background for high contrast against white panels */
+    --bg-raised:     #ffffff; /* White panels stand out brilliantly */
+    --bg-surface:    #cbd5e1; /* Slate-300 */
+    --bg-hover:      #f1f5f9; /* Slate-100 */
+    --bg-input:      #f8fafc; /* Slate-50 */
 
     /* Border ramp */
-    --border-subtle: rgba(0, 0, 0, 0.06);
-    --border-mid:    rgba(0, 0, 0, 0.12);
-    --border-focus:  rgba(0, 0, 0, 0.24);
+    --border-subtle: rgba(0, 0, 0, 0.08);
+    --border-mid:    rgba(0, 0, 0, 0.16);
+    --border-focus:  rgba(0, 0, 0, 0.28);
 
     /* Text ramp */
-    --text-primary:  #111827;
-    --text-secondary:#374151;
-    --text-muted:    #6b7280;
+    --text-primary:  #0f172a; /* Slate-900 */
+    --text-secondary:#334155; /* Slate-700 */
+    --text-muted:    #64748b; /* Slate-500 */
     --text-inverse:  #ffffff;
 
     /* Accent — slightly richer amber for light theme readability */
@@ -1159,15 +1159,25 @@ body.light-theme {
 }
 
 body.light-theme .grain-overlay {
-    opacity: 0.012;
+    opacity: 0.008;
 }
 
 body.light-theme .modal-overlay {
-    background: rgba(0, 0, 0, 0.45);
+    background: rgba(15, 23, 42, 0.3); /* Slate-900 overlay with glassmorphic blur */
 }
 
 body.light-theme .panel::before {
-    background: linear-gradient(90deg, transparent 0%, rgba(217, 119, 6, 0.15) 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(217, 119, 6, 0.2) 50%, transparent 100%);
+}
+
+/* Drop shadow to make panels pop beautifully off the darker slate background */
+body.light-theme .panel,
+body.light-theme .status-inner {
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+        0 2px 4px -1px rgba(0, 0, 0, 0.03),
+        0 0 0 1px rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.05);
 }
 
 body.light-theme .risk-badge.high {
