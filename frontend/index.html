@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Group60 Web Scraper — The Investigator. Dense, report-style site trust analysis dashboard.">
+        content="Group60 Web Scraper — The Investigator. Dense, report-style site trust analysis dashboard powered by ScamShield AI.">
     <title>Group60 // The Investigator</title>
 
     <!-- Google Fonts -->
@@ -42,7 +42,7 @@
                 </div>
             </div>
             <div class="top-bar-center">
-                <span class="concept-badge">Concept 1 — The Investigator</span>
+                <span class="concept-badge">ScamShield AI — The Investigator</span>
                 <span class="concept-desc">Dense, report-style layout. Power users &amp; researchers. Everything visible at once.</span>
             </div>
             <div class="top-bar-right">
@@ -64,7 +64,7 @@
                 </button>
                 <div class="header-badge">
                     <span class="live-dot"></span>
-                    <span>Agent Online</span>
+                    <span id="agent-status-text">Agent Online</span>
                 </div>
                 <span class="clock" id="header-clock"></span>
             </div>
@@ -94,6 +94,13 @@
                         <span>Investigate</span>
                     </button>
                 </div>
+                <div class="url-bar-options">
+                    <label class="option-toggle" title="If enabled, uses cached database reports (if under 24 hours old) instead of executing a new live crawl and AI analysis.">
+                        <input type="checkbox" id="cache-toggle" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">Use cache when available</span>
+                    </label>
+                </div>
             </div>
         </section>
 
@@ -111,159 +118,197 @@
         <!-- ───── DASHBOARD GRID (all panels visible at once) ───── -->
         <div class="dashboard-grid" id="dashboard-grid">
 
-            <!-- ROW 1: Trust Score + Trust Heatmap -->
-            <section class="panel panel-score" id="panel-score">
-                <div class="panel-label">TRUST SCORE</div>
-                <div class="score-display">
-                    <div class="score-ring" id="score-ring">
-                        <svg viewBox="0 0 120 120" class="score-svg">
-                            <circle class="score-track" cx="60" cy="60" r="52" />
-                            <circle class="score-fill" id="score-arc" cx="60" cy="60" r="52" />
-                        </svg>
-                        <div class="score-value" id="score-value">—</div>
+            <!-- ROW 1: Trust Score + Trust Heatmap + Scraped Data -->
+            <div class="dashboard-row row-top">
+                <section class="panel panel-score" id="panel-score">
+                    <div class="panel-label">TRUST SCORE</div>
+                    <div class="score-display">
+                        <div class="score-ring" id="score-ring">
+                            <svg viewBox="0 0 120 120" class="score-svg">
+                                <circle class="score-track" cx="60" cy="60" r="52" />
+                                <circle class="score-fill" id="score-arc" cx="60" cy="60" r="52" />
+                            </svg>
+                            <div class="score-value" id="score-value">—</div>
+                        </div>
+                        <div class="score-meta">
+                            <span class="score-label">out of 100</span>
+                            <span class="risk-badge" id="risk-badge">—</span>
+                            <span class="confidence-badge" id="confidence-badge"></span>
+                        </div>
                     </div>
-                    <div class="score-meta">
-                        <span class="score-label">out of 100</span>
-                        <span class="risk-badge" id="risk-badge">—</span>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <section class="panel panel-heatmap" id="panel-heatmap">
-                <div class="panel-label">TRUST HEATMAP</div>
-                <div class="heatmap-bars">
-                    <div class="heatmap-row" id="heatmap-domain">
-                        <span class="heatmap-name">Domain</span>
-                        <div class="heatmap-track"><div class="heatmap-fill" id="heatmap-fill-domain"></div></div>
-                        <span class="heatmap-val" id="heatmap-val-domain">—</span>
+                <section class="panel panel-heatmap" id="panel-heatmap">
+                    <div class="panel-label">TRUST HEATMAP</div>
+                    <div class="heatmap-bars">
+                        <div class="heatmap-row" id="heatmap-domain">
+                            <span class="heatmap-name">Domain</span>
+                            <div class="heatmap-track"><div class="heatmap-fill" id="heatmap-fill-domain"></div></div>
+                            <span class="heatmap-val" id="heatmap-val-domain">—</span>
+                        </div>
+                        <div class="heatmap-row" id="heatmap-content">
+                            <span class="heatmap-name">Content</span>
+                            <div class="heatmap-track"><div class="heatmap-fill" id="heatmap-fill-content"></div></div>
+                            <span class="heatmap-val" id="heatmap-val-content">—</span>
+                        </div>
+                        <div class="heatmap-row" id="heatmap-transparency">
+                            <span class="heatmap-name">Transparency</span>
+                            <div class="heatmap-track"><div class="heatmap-fill" id="heatmap-fill-transparency"></div></div>
+                            <span class="heatmap-val" id="heatmap-val-transparency">—</span>
+                        </div>
+                        <div class="heatmap-row" id="heatmap-reputation">
+                            <span class="heatmap-name">Reputation</span>
+                            <div class="heatmap-track"><div class="heatmap-fill" id="heatmap-fill-reputation"></div></div>
+                            <span class="heatmap-val" id="heatmap-val-reputation">—</span>
+                        </div>
                     </div>
-                    <div class="heatmap-row" id="heatmap-content">
-                        <span class="heatmap-name">Content</span>
-                        <div class="heatmap-track"><div class="heatmap-fill" id="heatmap-fill-content"></div></div>
-                        <span class="heatmap-val" id="heatmap-val-content">—</span>
-                    </div>
-                    <div class="heatmap-row" id="heatmap-transparency">
-                        <span class="heatmap-name">Transparency</span>
-                        <div class="heatmap-track"><div class="heatmap-fill" id="heatmap-fill-transparency"></div></div>
-                        <span class="heatmap-val" id="heatmap-val-transparency">—</span>
-                    </div>
-                    <div class="heatmap-row" id="heatmap-reputation">
-                        <span class="heatmap-name">Reputation</span>
-                        <div class="heatmap-track"><div class="heatmap-fill" id="heatmap-fill-reputation"></div></div>
-                        <span class="heatmap-val" id="heatmap-val-reputation">—</span>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- Scraped Data Panel (top right) -->
-            <section class="panel panel-data" id="panel-data">
-                <div class="panel-label">SCRAPED SITE DATA</div>
-                <div class="data-grid" id="data-grid">
-                    <div class="data-item">
-                        <span class="data-key">Domain Age</span>
-                        <span class="data-val" id="data-domain-age">—</span>
+                <!-- Scraped Data Panel (top right) -->
+                <section class="panel panel-data" id="panel-data">
+                    <div class="panel-label">SCRAPED SITE DATA</div>
+                    <div class="data-grid" id="data-grid">
+                        <div class="data-item">
+                            <span class="data-key">Domain Age</span>
+                            <span class="data-val" id="data-domain-age">—</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-key">SSL Status</span>
+                            <span class="data-val" id="data-ssl">—</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-key">Registrar</span>
+                            <span class="data-val" id="data-registrar">—</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-key">WHOIS Data</span>
+                            <span class="data-val" id="data-whois">—</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-key">Contact Page</span>
+                            <span class="data-val" id="data-contact">—</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-key">Jurisdiction</span>
+                            <span class="data-val" id="data-jurisdiction">—</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-key">Social Links</span>
+                            <span class="data-val" id="data-social">—</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-key">Legal Compliance</span>
+                            <span class="data-val" id="data-legal-compliance">—</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-key">Page Count</span>
+                            <span class="data-val" id="data-pages">—</span>
+                        </div>
+                        <div class="data-item">
+                            <span class="data-key">Tech Stack</span>
+                            <span class="data-val" id="data-tech">—</span>
+                        </div>
                     </div>
-                    <div class="data-item">
-                        <span class="data-key">SSL Status</span>
-                        <span class="data-val" id="data-ssl">—</span>
-                    </div>
-                    <div class="data-item">
-                        <span class="data-key">Registrar</span>
-                        <span class="data-val" id="data-registrar">—</span>
-                    </div>
-                    <div class="data-item">
-                        <span class="data-key">WHOIS Data</span>
-                        <span class="data-val" id="data-whois">—</span>
-                    </div>
-                    <div class="data-item">
-                        <span class="data-key">Contact Page</span>
-                        <span class="data-val" id="data-contact">—</span>
-                    </div>
-                    <div class="data-item">
-                        <span class="data-key">Social Links</span>
-                        <span class="data-val" id="data-social">—</span>
-                    </div>
-                    <div class="data-item">
-                        <span class="data-key">Page Count</span>
-                        <span class="data-val" id="data-pages">—</span>
-                    </div>
-                    <div class="data-item">
-                        <span class="data-key">Tech Stack</span>
-                        <span class="data-val" id="data-tech">—</span>
-                    </div>
-                </div>
-            </section>
+                </section>
+            </div>
 
-            <!-- ROW 2: Verdict + Investigation Report -->
-            <section class="panel panel-verdict" id="panel-verdict">
-                <div class="panel-label">VERDICT</div>
-                <p class="verdict-text" id="verdict-text">—</p>
-            </section>
+            <!-- ROW 2: Recommendation + Actions -->
+            <div class="dashboard-row row-rec-actions">
+                <section class="panel panel-recommendation" id="panel-recommendation">
+                    <div class="panel-label">RECOMMENDATION</div>
+                    <div class="rec-badge-wrap">
+                        <span class="rec-badge" id="rec-badge">—</span>
+                    </div>
+                </section>
 
-            <section class="panel panel-report" id="panel-report">
-                <div class="panel-label">INVESTIGATION REPORT</div>
-                <ul class="report-list" id="report-list">
-                    <!-- Dynamically populated -->
-                </ul>
-            </section>
+                <section class="panel panel-actions" id="panel-actions">
+                    <div class="panel-label">ACTIONS</div>
+                    <div class="action-buttons">
+                        <button class="btn-action btn-explain" id="btn-explain" type="button">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                            </svg>
+                            Explain like my grandmother
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow-icon">
+                                <line x1="7" y1="17" x2="17" y2="7"/>
+                                <polyline points="7 7 17 7 17 17"/>
+                            </svg>
+                        </button>
+                        <button class="btn-action btn-export-excel" id="btn-export" type="button">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                            </svg>
+                            Export as Excel File
+                        </button>
+                        <button class="btn-action btn-raw-json" id="btn-json" type="button">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="16 18 22 12 16 6"/>
+                                <polyline points="8 6 2 12 8 18"/>
+                            </svg>
+                            View Raw JSON
+                        </button>
+                    </div>
+                </section>
+            </div>
 
-            <!-- ROW 3: Recommendation + Export / Explain -->
-            <section class="panel panel-recommendation" id="panel-recommendation">
-                <div class="panel-label">RECOMMENDATION</div>
-                <div class="rec-badge-wrap">
-                    <span class="rec-badge" id="rec-badge">—</span>
-                </div>
-            </section>
+            <!-- ROW 3: Red Flags + Positive Findings -->
+            <div class="dashboard-row row-split-50">
+                <section class="panel panel-red-flags" id="panel-red-flags">
+                    <div class="panel-label">
+                        <span class="flag-icon-label">⚑</span> RED FLAGS
+                    </div>
+                    <ul class="flags-list" id="red-flags-list">
+                        <li class="flags-empty">No data yet</li>
+                    </ul>
+                </section>
 
-            <section class="panel panel-actions" id="panel-actions">
-                <div class="panel-label">ACTIONS</div>
-                <div class="action-buttons">
-                    <button class="btn-action btn-explain" id="btn-explain" type="button">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                        </svg>
-                        Explain like my grandmother
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow-icon">
-                            <line x1="7" y1="17" x2="17" y2="7"/>
-                            <polyline points="7 7 17 7 17 17"/>
-                        </svg>
-                    </button>
-                    <button class="btn-action btn-export-sheets" id="btn-export" type="button">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                        </svg>
-                        Export to Google Sheets
-                    </button>
-                    <button class="btn-action btn-raw-json" id="btn-json" type="button">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="16 18 22 12 16 6"/>
-                            <polyline points="8 6 2 12 8 18"/>
-                        </svg>
-                        View Raw JSON
-                    </button>
-                </div>
-            </section>
+                <section class="panel panel-positive" id="panel-positive">
+                    <div class="panel-label">
+                        <span class="positive-icon-label">✓</span> POSITIVE FINDINGS
+                    </div>
+                    <ul class="flags-list positive" id="positive-list">
+                        <li class="flags-empty">No data yet</li>
+                    </ul>
+                </section>
+            </div>
 
-            <!-- ROW 4: Full-width Extraction Table -->
-            <section class="panel panel-table" id="panel-table">
-                <div class="panel-table-header">
-                    <div class="panel-label">EXTRACTED PRODUCTS TABLE</div>
-                    <div class="table-meta" id="table-meta"></div>
-                </div>
-                <div class="table-wrap" id="table-wrap">
-                    <table class="results-table" id="results-table">
-                        <thead id="table-head"></thead>
-                        <tbody id="table-body"></tbody>
-                    </table>
-                </div>
-            </section>
+            <!-- ROW 4: Verdict + Investigation Report -->
+            <div class="dashboard-row row-split-50">
+                <section class="panel panel-verdict" id="panel-verdict">
+                    <div class="panel-label">VERDICT</div>
+                    <p class="verdict-text" id="verdict-text">—</p>
+                </section>
+
+                <section class="panel panel-report" id="panel-report">
+                    <div class="panel-label">INVESTIGATION REPORT</div>
+                    <ul class="report-list" id="report-list">
+                        <!-- Dynamically populated -->
+                    </ul>
+                </section>
+            </div>
+
+            <!-- ROW 5: Full-width Extraction Table -->
+            <div class="dashboard-row row-full">
+                <section class="panel panel-table" id="panel-table">
+                    <div class="panel-table-header">
+                        <div class="panel-label" id="table-label">EXTRACTED PRODUCTS TABLE</div>
+                        <div class="table-meta" id="table-meta"></div>
+                    </div>
+                    <div class="table-wrap" id="table-wrap">
+                        <table class="results-table" id="results-table">
+                            <thead id="table-head"></thead>
+                            <tbody id="table-body"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
 
         </div>
 
@@ -271,7 +316,7 @@
         <footer class="site-footer" id="site-footer">
             <span>Group60 Web Scraper &middot; The Investigator</span>
             <span class="footer-sep">&bull;</span>
-            <span>AI-Powered Trust Analysis &amp; Data Extraction</span>
+            <span>ScamShield AI — Fraud Detection &amp; Trust Analysis</span>
             <span class="footer-sep">&bull;</span>
             <span id="footer-clock"></span>
         </footer>
@@ -286,6 +331,19 @@
                 <button class="modal-close" id="modal-close">&times;</button>
             </div>
             <pre class="json-block" id="json-output"></pre>
+        </div>
+    </div>
+
+    <!-- Grandmother Explanation Modal -->
+    <div class="modal-overlay hidden" id="explain-modal">
+        <div class="modal-content modal-explain">
+            <div class="modal-header">
+                <span class="panel-label">💛 EXPLAIN LIKE MY GRANDMOTHER</span>
+                <button class="modal-close" id="explain-modal-close">&times;</button>
+            </div>
+            <div class="explain-body" id="explain-body">
+                <p id="explain-text">No explanation available yet. Run an investigation first!</p>
+            </div>
         </div>
     </div>
 
