@@ -68,7 +68,7 @@
         domainAge: document.getElementById('data-domain-age'),
         ssl:       document.getElementById('data-ssl'),
         registrar: document.getElementById('data-registrar'),
-        whois:     document.getElementById('data-whois'),
+        legalCompliance: document.getElementById('data-legal-compliance'),
         contact:   document.getElementById('data-contact'),
         social:    document.getElementById('data-social'),
         pages:     document.getElementById('data-pages'),
@@ -165,9 +165,14 @@
             case 'registrar':
                 if (!v || v.includes('unknown') || v.includes('requires') || v.includes('null')) return 'warn';
                 return '';
-            case 'whois':
-                if (!v || v.includes('unknown') || v.includes('requires') || v.includes('privacy') || v.includes('null')) return 'warn';
-                return '';
+            case 'legalCompliance':
+                if (!v || v.includes('unknown') || v.includes('requires') || v.includes('null')) return 'warn';
+                if (v.includes('valid') || v.includes('found')) {
+                    if (v.includes('no refund') || v.includes('missing') || v.includes('incomplete')) return 'warn';
+                    return 'ok';
+                }
+                if (v.includes('missing') || v.includes('none')) return 'danger';
+                return 'warn';
             case 'contact':
                 if (v.includes('found') && !v.includes('not')) return 'ok';
                 if (v.includes('not found')) return 'danger';
@@ -245,7 +250,7 @@
             domainAge: siteData.domain_age   || 'Unknown',
             ssl:       siteData.ssl_status   || '—',
             registrar: siteData.registrar    || 'Unknown',
-            whois:     siteData.whois_data   || 'Unknown',
+            legalCompliance: siteData.legal_compliance || 'Unknown',
             contact:   siteData.contact_page || '—',
             social:    siteData.social_links || '—',
             pages:     siteData.page_count   || '—',
@@ -392,7 +397,7 @@
             '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
             '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>' +
             '<polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' +
-            '</svg> Export to Google Sheets';
+            '</svg> Export as Excel File';
     }
 
     // ── Populate UI with the normalized investigation object ──
@@ -569,11 +574,65 @@
 
     // ── Export ──
     function handleExport() {
-        btnExport.classList.add('exported');
-        btnExport.innerHTML =
-            '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-            '<polyline points="20 6 9 17 4 12"/>' +
-            '</svg> Exported ✓';
+        if (!lastResult) {
+            alert('No investigation data to export. Run an investigation first.');
+            return;
+        }
+
+        btnExport.classList.add('exporting');
+        btnExport.innerHTML = 'Exporting...';
+
+        fetch('/api/export-excel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: lastResult }),
+        })
+        .then(function (res) {
+            if (!res.ok) throw new Error('Export failed');
+            return res.blob();
+        })
+        .then(function (blob) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const cleanUrl = lastResult.meta?.url 
+                ? lastResult.meta.url.replace(/^https?:\/\//i, '').replace(/[^a-z0-9]/gi, '_') 
+                : 'report';
+            a.download = `scamshield_${cleanUrl}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+
+            btnExport.classList.remove('exporting');
+            btnExport.classList.add('exported');
+            btnExport.innerHTML =
+                '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                '<polyline points="20 6 9 17 4 12"/>' +
+                '</svg> Exported ✓';
+
+            // Reset after 3 seconds
+            setTimeout(function () {
+                btnExport.classList.remove('exported');
+                btnExport.innerHTML =
+                    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                    '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>' +
+                    '<polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' +
+                    '</svg> Export as Excel File';
+            }, 3000);
+        })
+        .catch(function (err) {
+            console.error(err);
+            btnExport.classList.remove('exporting');
+            btnExport.innerHTML = 'Error!';
+            setTimeout(function () {
+                btnExport.innerHTML =
+                    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                    '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>' +
+                    '<polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>' +
+                    '</svg> Export as Excel File';
+            }, 3000);
+        });
     }
 
     // ── JSON Modal ──

@@ -10,6 +10,8 @@ const openaiService = require('../services/openai');
 const supabaseService = require('../services/supabase');
 const sslChecker = require('../services/sslChecker');
 const domscanService = require('../services/domscan');
+const excelGenerator = require('../utils/excelGenerator');
+
 
 /**
  * Validate that a string is a valid URL
@@ -58,9 +60,10 @@ function normalizeAnalysis(raw, fallbackUrl) {
       registrar:    raw.siteData?.registrar   ?? null,
       contact_page: raw.siteData?.contact_page ?? raw.siteData?.contactPage ?? 'Not found',
       page_count:   raw.siteData?.page_count  ?? raw.siteData?.pageCount   ?? null,
-      ssl_status:   raw.siteData?.ssl_status  ?? raw.siteData?.sslStatus   ?? null,
-      whois_data:   raw.siteData?.whois_data  ?? raw.siteData?.whoisData   ?? null,
-      social_links: raw.siteData?.social_links ?? raw.siteData?.socialLinks ?? 'None detected',
+      ssl_status:       raw.siteData?.ssl_status       ?? raw.siteData?.sslStatus       ?? null,
+      legal_compliance: raw.siteData?.legal_compliance ?? raw.siteData?.legalCompliance ?? raw.siteData?.whois_data ?? raw.siteData?.whoisData ?? null,
+      whois_data:       raw.siteData?.whois_data       ?? raw.siteData?.whoisData       ?? raw.siteData?.legal_compliance ?? raw.siteData?.legalCompliance ?? null,
+      social_links:     raw.siteData?.social_links     ?? raw.siteData?.socialLinks     ?? 'None detected',
       tech_stack:   raw.siteData?.tech_stack  ?? raw.siteData?.techStack   ?? 'Unknown',
     },
     verdict: raw.verdict ?? '',
@@ -201,4 +204,39 @@ router.post('/investigate', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/export-excel
+ * Body: { data: <normalized-investigation-data> }
+ */
+router.post('/export-excel', (req, res) => {
+  try {
+    const { data } = req.body;
+    if (!data) {
+      return res.status(400).json({
+        error: 'Missing data',
+        message: 'No investigation data provided to export.',
+      });
+    }
+
+    const excelBuffer = excelGenerator.generateExcelBuffer(data);
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="scamshield-investigation.xlsx"'
+    );
+    return res.send(excelBuffer);
+  } catch (err) {
+    console.error(`[Export Excel] Error generating file:`, err);
+    return res.status(500).json({
+      error: 'Export failed',
+      message: 'An error occurred while generating the Excel spreadsheet.',
+    });
+  }
+});
+
 module.exports = router;
+

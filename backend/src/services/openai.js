@@ -32,15 +32,15 @@ Score each category 0–100 based on evidence:
 
 Domain Score
   High (80+): domain older than 2 years, stable ownership, reputable registrar
-  Low (0–30): domain under 30 days old, hidden WHOIS, suspicious TLD
+  Low (0–30): domain under 30 days old, hidden registry details, suspicious TLD
 
 Content Score
   High (80+): clear product descriptions, no unrealistic claims, original content
   Low (0–30): guaranteed returns, fear/urgency language, copied/AI-generated spam content
 
-Transparency Score
-  High (80+): privacy policy, terms of service, refund policy, contact page all present
-  Low (0–30): missing legal pages, no contact information, vague policies
+Transparency & Legal Compliance Score
+  High (80+): LEGAL COMPLIANCE shows 'Found (Valid)' or equivalent, meaning privacy policy, terms of service, refund policy, and contact page are all present
+  Low (0–30): LEGAL COMPLIANCE is 'Missing / Incomplete', indicating missing legal pages, no contact info, or vague policies
 
 Reputation Score
   High (80+): positive reviews found, no scam reports, active community presence
@@ -92,7 +92,7 @@ SAFETY RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 NEVER:
-  - Invent domain ages, WHOIS data, or SSL details (use the exact verified values provided in the prompt)
+  - Invent domain ages, LEGAL COMPLIANCE status, or SSL details (use the exact verified values provided in the prompt)
   - Fabricate reviews or business registrations
   - Claim certainty without scraped/provided evidence
   - Return anything outside the JSON structure
@@ -148,6 +148,7 @@ Social links: ${data.socialLinks}
 Has privacy policy: ${data.hasPrivacyPolicy}
 Has terms of service: ${data.hasTermsOfService}
 Has refund policy: ${data.hasRefundPolicy}
+Verified Legal Compliance: ${data.legalCompliance}
 Uses urgency language: ${data.urgencyLanguage}
 Uses guarantee language: ${data.guaranteeLanguage}
 Business name: ${data.businessName || 'Unknown'}
@@ -185,7 +186,7 @@ Return ONLY this exact JSON structure (no text outside it):
       "contact_page": <"Found"|"Not found">,
       "page_count": <string, e.g. "22 pages crawled">,
       "ssl_status": <string, summarizing status, issuer, and days left, e.g., "Valid (Cloudflare, 84 days left)" or "Expired" or "No HTTPS detected">,
-      "whois_data": <string or null>,
+      "legal_compliance": <string, e.g., "Privacy & Terms: Found (Valid)" or "Privacy & Terms: Found (No Refund Policy)" or "Privacy & Terms: Missing (Privacy Policy, Refund Policy)">,
       "social_links": <string>,
       "tech_stack": <string>
     },

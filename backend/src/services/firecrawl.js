@@ -8,7 +8,7 @@ const FirecrawlApp = require('@mendable/firecrawl-js').default || require('@mend
 const firecrawl = new FirecrawlApp({ apiKey: process.env.FIRECRAWL_API_KEY });
 
 // Key paths to look for during site mapping
-const KEY_PATHS = ['/about', '/contact', '/terms', '/privacy', '/products', '/shop', '/store', '/team', '/faq'];
+const KEY_PATHS = ['/about', '/contact', '/terms', '/privacy', '/refund', '/returns', '/products', '/shop', '/store', '/team', '/faq'];
 
 // Social media domains to detect
 const SOCIAL_DOMAINS = ['facebook.com', 'instagram.com', 'twitter.com', 'x.com', 'linkedin.com', 'tiktok.com', 'youtube.com'];
@@ -80,11 +80,14 @@ async function investigateSite(url) {
                 }
               }
             },
-            hasPrivacyPolicy:  { type: 'boolean' },
-            hasTermsOfService: { type: 'boolean' },
-            hasRefundPolicy:   { type: 'boolean' },
-            urgencyLanguage:   { type: 'boolean' },
-            guaranteeLanguage: { type: 'boolean' }
+            hasPrivacyPolicy:           { type: 'boolean', description: 'Set to true if there is an explicit link to or text of a Privacy Policy on the page.' },
+            hasTermsOfService:          { type: 'boolean', description: 'Set to true if there is an explicit link to or text of a Terms of Service or Terms & Conditions on the page.' },
+            hasRefundPolicy:            { type: 'boolean', description: 'Set to true if there is an explicit link to or text of a Refund Policy or Return Policy on the page.' },
+            privacyPolicyLinkOrStatus:  { type: 'string', description: 'The exact URL/path, link text, or a snippet of where the Privacy Policy is found. Return "Not found" if absent.' },
+            termsOfServiceLinkOrStatus: { type: 'string', description: 'The exact URL/path, link text, or a snippet of where the Terms of Service is found. Return "Not found" if absent.' },
+            refundPolicyLinkOrStatus:   { type: 'string', description: 'The exact URL/path, link text, or a snippet of where the Refund/Return Policy is found. Return "Not found" if absent.' },
+            urgencyLanguage:            { type: 'boolean' },
+            guaranteeLanguage:          { type: 'boolean' }
           }
         }
       }
@@ -189,6 +192,31 @@ async function investigateSite(url) {
   const physicalAddress = contactData.physicalAddress || extracted.physicalAddress || null;
   const contactEmail = contactData.emailAddress || extracted.contactEmail || null;
 
+  // Determine legal compliance status
+  const hasPrivacy = !!extracted.hasPrivacyPolicy || 
+                     (extracted.privacyPolicyLinkOrStatus && extracted.privacyPolicyLinkOrStatus.toLowerCase() !== 'not found') || 
+                     !!keyPagesFound['/privacy'];
+  const hasTerms = !!extracted.hasTermsOfService || 
+                   (extracted.termsOfServiceLinkOrStatus && extracted.termsOfServiceLinkOrStatus.toLowerCase() !== 'not found') || 
+                   !!keyPagesFound['/terms'];
+  const hasRefund = !!extracted.hasRefundPolicy || 
+                    (extracted.refundPolicyLinkOrStatus && extracted.refundPolicyLinkOrStatus.toLowerCase() !== 'not found') || 
+                    !!keyPagesFound['/refund'] || 
+                    !!keyPagesFound['/returns'];
+
+  let legalCompliance = '';
+  if (hasPrivacy && hasTerms && hasRefund) {
+    legalCompliance = 'Privacy & Terms: Found (Valid)';
+  } else if (hasPrivacy && hasTerms) {
+    legalCompliance = 'Privacy & Terms: Found (No Refund Policy)';
+  } else {
+    const missing = [];
+    if (!hasPrivacy) missing.push('Privacy Policy');
+    if (!hasTerms) missing.push('Terms of Service');
+    if (!hasRefund) missing.push('Refund Policy');
+    legalCompliance = `Privacy & Terms: Missing (${missing.join(', ')})`;
+  }
+
   const result = {
     url,
     pageCount,
@@ -196,9 +224,10 @@ async function investigateSite(url) {
     sslStatus,
     contactPageFound,
     socialLinks,
-    hasPrivacyPolicy:  extracted.hasPrivacyPolicy || false,
-    hasTermsOfService: extracted.hasTermsOfService || false,
-    hasRefundPolicy:   extracted.hasRefundPolicy || false,
+    hasPrivacyPolicy:  hasPrivacy,
+    hasTermsOfService: hasTerms,
+    hasRefundPolicy:   hasRefund,
+    legalCompliance,
     urgencyLanguage:   extracted.urgencyLanguage || false,
     guaranteeLanguage: extracted.guaranteeLanguage || false,
     physicalAddress,
