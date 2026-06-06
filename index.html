@@ -112,6 +112,17 @@
                 <div class="status-progress-track" id="status-progress-track">
                     <div class="status-progress-fill" id="status-progress-fill"></div>
                 </div>
+                <button class="status-details-btn" id="status-details-btn" type="button" aria-expanded="false" title="Show Detailed Substeps">
+                    <span>More Details</span>
+                    <svg class="chevron-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+            <div class="status-details-panel collapsed" id="status-details-panel">
+                <div class="status-substeps" id="status-substeps">
+                    <!-- Dynamic substeps injected here by JavaScript -->
+                </div>
             </div>
         </section>
 

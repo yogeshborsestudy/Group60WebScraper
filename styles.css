@@ -424,6 +424,143 @@ body {
     transition: width 0.5s var(--ease-out);
 }
 
+/* More Details Button styling */
+.status-details-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-mid);
+    border-radius: var(--r-sm);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.2s var(--ease-out);
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.status-details-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border-color: var(--border-focus);
+}
+
+.status-details-btn .chevron-icon {
+    transition: transform 0.25s var(--ease-out);
+}
+
+.status-details-btn[aria-expanded="true"] .chevron-icon {
+    transform: rotate(180deg);
+}
+
+/* Expanding details panel */
+.status-details-panel {
+    background: var(--bg-raised);
+    border: 1px solid var(--border-subtle);
+    border-top: none;
+    border-radius: 0 0 var(--r-md) var(--r-md);
+    padding: var(--sp-md) var(--sp-lg);
+    margin-top: -1px;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, padding 0.3s ease;
+    max-height: 500px;
+    opacity: 1;
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+}
+
+.status-details-panel.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border: none;
+    pointer-events: none;
+}
+
+/* Rounded corners transition for status bar when open */
+.status-strip.details-open .status-inner {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: transparent;
+}
+
+/* Detailed substeps formatting */
+.status-substeps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-sm);
+}
+
+.substep-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.substep-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+}
+
+.substep-name {
+    color: var(--text-secondary);
+}
+
+.substep-status {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+}
+
+.substep-status.pending {
+    color: var(--text-muted);
+}
+
+.substep-status.active {
+    color: var(--accent);
+}
+
+.substep-status.done {
+    color: var(--success);
+}
+
+.substep-progress-track {
+    height: 3px;
+    background: var(--bg-surface);
+    border-radius: 3px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.substep-progress-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+}
+
+.substep-progress-fill.pending {
+    background: var(--border-mid);
+}
+
+.substep-progress-fill.active {
+    background: linear-gradient(90deg, var(--accent), #f0c674);
+}
+
+.substep-progress-fill.done {
+    background: var(--success);
+}
+
 /* ── Panel (generic card) ── */
 .panel {
     background: var(--bg-raised);
@@ -1172,7 +1309,8 @@ body.light-theme .panel::before {
 
 /* Drop shadow to make panels pop beautifully off the darker slate background */
 body.light-theme .panel,
-body.light-theme .status-inner {
+body.light-theme .status-inner,
+body.light-theme .status-details-panel {
     box-shadow: 
         0 4px 6px -1px rgba(0, 0, 0, 0.05), 
         0 2px 4px -1px rgba(0, 0, 0, 0.03),

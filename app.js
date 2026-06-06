@@ -23,6 +23,10 @@
     const statusDot        = document.getElementById('status-dot');
     const statusText       = document.getElementById('status-text');
     const progressFill     = document.getElementById('status-progress-fill');
+    const btnDetails       = document.getElementById('status-details-btn');
+    const detailsPanel     = document.getElementById('status-details-panel');
+    const statusStrip      = document.getElementById('status-strip');
+    const substepsContainer = document.getElementById('status-substeps');
     const scoreValue       = document.getElementById('score-value');
     const scoreArc         = document.getElementById('score-arc');
     const riskBadge        = document.getElementById('risk-badge');
@@ -105,6 +109,68 @@
         statusText.textContent = text;
         statusDot.className = 'status-dot' + (dotCls ? ' ' + dotCls : '');
         if (pct !== undefined) progressFill.style.width = pct + '%';
+    }
+
+    function renderSubsteps() {
+        if (!substepsContainer) return;
+        substepsContainer.innerHTML = STATUS_STEPS.map(function (step, idx) {
+            return '<div class="substep-row" id="substep-row-' + idx + '">' +
+                '<div class="substep-info">' +
+                    '<span class="substep-name">' + step.text + '</span>' +
+                    '<span class="substep-status pending" id="substep-status-' + idx + '">Pending</span>' +
+                '</div>' +
+                '<div class="substep-progress-track">' +
+                    '<div class="substep-progress-fill pending" id="substep-progress-fill-' + idx + '" style="width: 0%"></div>' +
+                '</div>' +
+            '</div>';
+        }).join('');
+    }
+
+    function updateSubsteps(activeIdx, isDone) {
+        STATUS_STEPS.forEach(function (step, idx) {
+            const statusEl = document.getElementById('substep-status-' + idx);
+            const fillEl = document.getElementById('substep-progress-fill-' + idx);
+            if (!statusEl || !fillEl) return;
+
+            if (isDone) {
+                statusEl.textContent = 'Completed';
+                statusEl.className = 'substep-status done';
+                fillEl.className = 'substep-progress-fill done';
+                fillEl.style.transition = 'width 0.4s ease-out';
+                fillEl.style.width = '100%';
+            } else if (idx < activeIdx) {
+                statusEl.textContent = 'Completed';
+                statusEl.className = 'substep-status done';
+                fillEl.className = 'substep-progress-fill done';
+                fillEl.style.transition = 'width 0.4s ease-out';
+                fillEl.style.width = '100%';
+            } else if (idx === activeIdx) {
+                statusEl.textContent = 'Running...';
+                statusEl.className = 'substep-status active';
+                fillEl.className = 'substep-progress-fill active';
+
+                let duration = 3000;
+                if (idx < STATUS_STEPS.length - 1) {
+                    duration = STATUS_STEPS[idx + 1].delay - step.delay;
+                } else {
+                    duration = 8000;
+                }
+
+                fillEl.style.transition = 'width ' + duration + 'ms linear';
+                fillEl.style.width = '0%';
+                setTimeout(function () {
+                    if (isRunning && fillEl.className.indexOf('active') !== -1) {
+                        fillEl.style.width = '100%';
+                    }
+                }, 50);
+            } else {
+                statusEl.textContent = 'Pending';
+                statusEl.className = 'substep-status pending';
+                fillEl.className = 'substep-progress-fill pending';
+                fillEl.style.transition = 'none';
+                fillEl.style.width = '0%';
+            }
+        });
     }
 
     function heatColor(val) {
@@ -501,16 +567,18 @@
 
         // Reset panels
         resetPanels();
+        updateSubsteps(-1, false);
 
         // Show initial status
         setStatus('Initializing ScamShield AI investigation...', 'active', 2);
 
         // Start timed status messages
         var statusTimers = [];
-        STATUS_STEPS.forEach(function (step) {
+        STATUS_STEPS.forEach(function (step, idx) {
             var timer = setTimeout(function () {
                 if (isRunning) {
                     setStatus(step.text, 'active', step.pct);
+                    updateSubsteps(idx, false);
                 }
             }, step.delay);
             statusTimers.push(timer);
@@ -554,6 +622,9 @@
             // Clear status timers
             statusTimers.forEach(clearTimeout);
 
+            // Mark all substeps as complete
+            updateSubsteps(-1, true);
+
             // result.data IS the normalized investigation object
             var inv = result.data;
             lastResult = inv;
@@ -579,6 +650,9 @@
         .catch(function (err) {
             // Clear status timers
             statusTimers.forEach(clearTimeout);
+
+            // Reset substeps on error
+            updateSubsteps(-1, false);
 
             console.error('[Investigation Error]', err);
             setStatus('Error: ' + err.message, 'error', 0);
@@ -702,6 +776,28 @@
     inputUrl.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') runInvestigation();
     });
+
+    if (btnDetails && detailsPanel) {
+        btnDetails.addEventListener('click', function () {
+            var isExpanded = btnDetails.getAttribute('aria-expanded') === 'true';
+            btnDetails.setAttribute('aria-expanded', !isExpanded);
+
+            var btnText = btnDetails.querySelector('span');
+            if (btnText) {
+                btnText.textContent = isExpanded ? 'More Details' : 'Less Details';
+            }
+
+            if (isExpanded) {
+                detailsPanel.classList.add('collapsed');
+                statusStrip.classList.remove('details-open');
+            } else {
+                detailsPanel.classList.remove('collapsed');
+                statusStrip.classList.add('details-open');
+            }
+        });
+    }
+
+    renderSubsteps();
 
     // Theme toggle
     if (themeToggle) {
