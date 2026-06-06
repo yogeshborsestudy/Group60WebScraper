@@ -527,11 +527,28 @@
         })
         .then(function (response) {
             if (!response.ok) {
-                return response.json().then(function (errData) {
-                    throw new Error(errData.message || 'Investigation failed (HTTP ' + response.status + ')');
+                return response.text().then(function (errText) {
+                    let errMsg = 'Investigation failed (HTTP ' + response.status + ')';
+                    try {
+                        const errData = JSON.parse(errText);
+                        errMsg = errData.message || errMsg;
+                    } catch (e) {
+                        if (response.status === 502 || errText.includes('Bad Gateway') || errText.includes('Cannot GET')) {
+                            errMsg = 'Netlify could not connect to your backend (HTTP 502/504). Please ensure your backend is deployed and that you have set the BACKEND_URL environment variable in your Netlify site settings.';
+                        } else {
+                            errMsg = (errText.slice(0, 150) || errMsg) + ' (HTTP ' + response.status + ')';
+                        }
+                    }
+                    throw new Error(errMsg);
                 });
             }
-            return response.json();
+            return response.text().then(function (text) {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Invalid server response: expected JSON but received HTML or text. Please check if your backend URL is configured correctly.');
+                }
+            });
         })
         .then(function (result) {
             // Clear status timers
