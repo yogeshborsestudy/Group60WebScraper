@@ -9,6 +9,7 @@ const firecrawlService = require('../services/firecrawl');
 const openaiService = require('../services/openai');
 const supabaseService = require('../services/supabase');
 const sslChecker = require('../services/sslChecker');
+const domscanService = require('../services/domscan');
 
 /**
  * Validate that a string is a valid URL
@@ -53,14 +54,14 @@ function normalizeAnalysis(raw, fallbackUrl) {
       reputation:   raw.heatmap?.reputation   ?? 0,
     },
     scraped_site_data: {
-      domain_age:   raw.siteData?.domainAge   ?? null,
+      domain_age:   raw.siteData?.domain_age  ?? raw.siteData?.domainAge   ?? null,
       registrar:    raw.siteData?.registrar   ?? null,
-      contact_page: raw.siteData?.contactPage ?? 'Not found',
-      page_count:   raw.siteData?.pageCount   ?? null,
-      ssl_status:   raw.siteData?.sslStatus   ?? null,
-      whois_data:   raw.siteData?.whoisData   ?? null,
-      social_links: raw.siteData?.socialLinks ?? 'None detected',
-      tech_stack:   raw.siteData?.techStack   ?? 'Unknown',
+      contact_page: raw.siteData?.contact_page ?? raw.siteData?.contactPage ?? 'Not found',
+      page_count:   raw.siteData?.page_count  ?? raw.siteData?.pageCount   ?? null,
+      ssl_status:   raw.siteData?.ssl_status  ?? raw.siteData?.sslStatus   ?? null,
+      whois_data:   raw.siteData?.whois_data  ?? raw.siteData?.whoisData   ?? null,
+      social_links: raw.siteData?.social_links ?? raw.siteData?.socialLinks ?? 'None detected',
+      tech_stack:   raw.siteData?.tech_stack  ?? raw.siteData?.techStack   ?? 'Unknown',
     },
     verdict: raw.verdict ?? '',
     investigation_report: (raw.report || []).map(r => ({ type: r.type, text: r.text })),
@@ -94,7 +95,7 @@ router.post('/investigate', async (req, res) => {
 
   try {
     // ── 1. Validate URL ──
-    const { url } = req.body;
+    const { url, bypassCache } = req.body;
 
     if (!url || typeof url !== 'string') {
       return res.status(400).json({
@@ -115,8 +116,13 @@ router.post('/investigate', async (req, res) => {
     console.log(`\n[Investigate] Starting investigation for: ${trimmedUrl}`);
 
     // ── 2. Check Supabase cache ──
-    console.log(`[Investigate] Checking cache...`);
-    const cached = await supabaseService.checkCache(trimmedUrl);
+    let cached = null;
+    if (!bypassCache) {
+      console.log(`[Investigate] Checking cache...`);
+      cached = await supabaseService.checkCache(trimmedUrl);
+    } else {
+      console.log(`[Investigate] Cache bypass requested. Forcing fresh scan.`);
+    }
 
     if (cached) {
       const elapsed = Date.now() - startTime;
@@ -126,22 +132,26 @@ router.post('/investigate', async (req, res) => {
       return res.json({ cached: true, data: normalized });
     }
 
-    // ── 3. Scrape with Firecrawl and check SSL in parallel ──
-    console.log(`[Investigate] No cache hit. Starting Firecrawl and SSL investigations...`);
+    // ── 3. Scrape with Firecrawl, check SSL, and query DomScan in parallel ──
+    console.log(`[Investigate] No cache hit. Starting Firecrawl, SSL, and DomScan investigations...`);
     let scrapedData;
     let sslResult;
+    let domscanResult;
     try {
       const results = await Promise.all([
         firecrawlService.investigateSite(trimmedUrl),
-        sslChecker.checkSSL(trimmedUrl)
+        sslChecker.checkSSL(trimmedUrl),
+        domscanService.getDomainProfile(trimmedUrl)
       ]);
       scrapedData = results[0];
       sslResult = results[1];
+      domscanResult = results[2];
       
-      // Attach SSL check result to scrapedData to pass it down the pipeline
+      // Attach SSL and DomScan results to scrapedData to pass it down the pipeline
       scrapedData.sslResult = sslResult;
+      scrapedData.domscanResult = domscanResult;
     } catch (err) {
-      console.error(`[Investigate] Firecrawl error:`, err.message);
+      console.error(`[Investigate] Scraping/crawling phase error:`, err.message);
       return res.status(502).json({
         error: 'Scraping failed',
         message: 'Unable to scrape the target website. The site may be blocking automated access or is temporarily unavailable.',

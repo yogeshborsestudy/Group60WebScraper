@@ -501,11 +501,14 @@
             statusTimers.push(timer);
         });
 
+        const cacheToggle = document.getElementById('cache-toggle');
+        const bypassCache = cacheToggle ? !cacheToggle.checked : false;
+
         // Make API call
         fetch('/api/investigate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: url }),
+            body: JSON.stringify({ url: url, bypassCache: bypassCache }),
         })
         .then(function (response) {
             if (!response.ok) {

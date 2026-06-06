@@ -47,6 +47,10 @@ async function checkCache(url) {
     const twentyFourHours = 24 * 60 * 60 * 1000;
 
     if (now - cachedTime < twentyFourHours) {
+      if (data.trust_score === null || data.trust_score === undefined) {
+        console.log(`[Supabase] Cache entry for ${url} exists but has no trust score. Bypassing to refresh.`);
+        return null;
+      }
       console.log(`[Supabase] Cache hit for ${url} (age: ${Math.round((now - cachedTime) / 60000)} min)`);
       return {
         trustScore:             data.trust_score,
@@ -107,23 +111,39 @@ async function saveStructured(url, analysisResult) {
   const client = getClient();
   if (!client) return;
 
+  const inv = analysisResult?.investigation || analysisResult || {};
+
+  // Extract fields gracefully supporting both nested/snake_case and flat/camelCase formats
+  const trust_score = inv.trust_score?.overall ?? inv.trustScore ?? null;
+  const risk_level = inv.trust_score?.risk_level ?? inv.risk ?? null;
+  const confidence = inv.trust_score?.confidence ?? inv.confidence ?? null;
+  const heatmap = inv.trust_heatmap ?? inv.heatmap ?? null;
+  const site_data = inv.scraped_site_data ?? inv.siteData ?? null;
+  const verdict = inv.verdict ?? null;
+  const report = inv.investigation_report ?? inv.report ?? null;
+  const recommendation = inv.recommendation ?? null;
+  const explain_like_grandmother = inv.explain_like_grandmother ?? inv.explainLikeGrandmother ?? null;
+  const red_flags = inv.red_flags ?? inv.redFlags ?? null;
+  const positive_findings = inv.positive_findings ?? inv.positiveFindings ?? null;
+  const products = inv.extracted_data?.rows ?? inv.products ?? null;
+
   const { error } = await client
     .from('scraped_structured')
     .upsert(
       {
         url,
-        trust_score:             analysisResult.trustScore,
-        risk_level:              analysisResult.risk,
-        confidence:              analysisResult.confidence,
-        heatmap:                 analysisResult.heatmap,
-        site_data:               analysisResult.siteData,
-        verdict:                 analysisResult.verdict,
-        report:                  analysisResult.report,
-        recommendation:          analysisResult.recommendation,
-        explain_like_grandmother: analysisResult.explainLikeGrandmother,
-        red_flags:               analysisResult.redFlags,
-        positive_findings:       analysisResult.positiveFindings,
-        products:                analysisResult.products,
+        trust_score,
+        risk_level,
+        confidence,
+        heatmap,
+        site_data,
+        verdict,
+        report,
+        recommendation,
+        explain_like_grandmother,
+        red_flags,
+        positive_findings,
+        products,
         timestamp:               new Date().toISOString(),
       },
       { onConflict: 'url' }

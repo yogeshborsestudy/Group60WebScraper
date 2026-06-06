@@ -92,13 +92,13 @@ SAFETY RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 NEVER:
-  - Invent domain ages, WHOIS data, or SSL details
+  - Invent domain ages, WHOIS data, or SSL details (use the exact verified values provided in the prompt)
   - Fabricate reviews or business registrations
-  - Claim certainty without scraped evidence
+  - Claim certainty without scraped/provided evidence
   - Return anything outside the JSON structure
 
 ALWAYS:
-  - Base every score on evidence from scraped content
+  - Base every score on evidence from scraped content and provided domain registry details (domain age, registrar)
   - Use null for any field you cannot verify
   - Lower confidence score when data is incomplete
   - Distinguish facts from inferences in report bullets
@@ -107,14 +107,37 @@ ALWAYS:
 Always respond with valid JSON only. No text before or after the JSON.`;
 
 /**
+ * Format domain age in days into years and months
+ * @param {number} ageDays
+ * @returns {string}
+ */
+function formatDomainAge(ageDays) {
+  if (ageDays === undefined || ageDays === null) return 'Unknown';
+  const years = Math.floor(ageDays / 365);
+  const months = Math.floor((ageDays % 365) / 30);
+  if (years > 0) {
+    return `${years} year${years > 1 ? 's' : ''}${months > 0 ? `, ${months} month${months > 1 ? 's' : ''}` : ''} (${ageDays} days)`;
+  }
+  if (months > 0) {
+    return `${months} month${months > 1 ? 's' : ''} (${ageDays} days)`;
+  }
+  return `${ageDays} day${ageDays > 1 ? 's' : ''}`;
+}
+
+/**
  * Build the user prompt from scraped data
  */
 function buildUserPrompt(data) {
   const now = new Date().toLocaleTimeString('en-US', { hour12: true });
 
+  const ageStr = data.domscanResult ? formatDomainAge(data.domscanResult.age_days) : 'Unknown';
+  const registrarStr = data.domscanResult?.registrar || 'Unknown';
+
   return `Analyze this website data and return a complete trust assessment.
 
 Website URL: ${data.url}
+Verified Domain Age: ${ageStr}
+Verified Domain Registrar: ${registrarStr}
 Page count: ${data.pageCount}
 Tech stack: ${data.techStack}
 SSL Basic Status: ${data.sslStatus}
@@ -157,8 +180,8 @@ Return ONLY this exact JSON structure (no text outside it):
       "reputation": <number 0-100>
     },
     "scraped_site_data": {
-      "domain_age": <string or null>,
-      "registrar": <string or null>,
+      "domain_age": ${JSON.stringify(ageStr)},
+      "registrar": ${JSON.stringify(registrarStr)},
       "contact_page": <"Found"|"Not found">,
       "page_count": <string, e.g. "22 pages crawled">,
       "ssl_status": <string, summarizing status, issuer, and days left, e.g., "Valid (Cloudflare, 84 days left)" or "Expired" or "No HTTPS detected">,

@@ -22,6 +22,26 @@ function calculateTrustScore(scrapedData) {
 
   if (scrapedData.techStack && scrapedData.techStack !== 'Unknown') domainScore += 10;
 
+  // Utilize DomScan profile information for fallback scoring
+  if (scrapedData.domscanResult) {
+    const ageDays = scrapedData.domscanResult.age_days;
+    if (ageDays !== undefined && ageDays !== null) {
+      if (ageDays > 730) {
+        domainScore += 20;
+      } else if (ageDays < 30) {
+        domainScore -= 25;
+      } else if (ageDays < 180) {
+        domainScore -= 15;
+      } else {
+        domainScore += 10;
+      }
+    }
+    const registrar = scrapedData.domscanResult.registrar;
+    if (registrar && !registrar.toLowerCase().includes('unknown')) {
+      domainScore += 5;
+    }
+  }
+
   // ── Content Score (0–100) ──
   let contentScore = 60; // base
   if (scrapedData.urgencyLanguage) contentScore -= 20;
