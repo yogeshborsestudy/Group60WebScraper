@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Group60 Web Scraper — The Investigator. Dense, report-style site trust analysis dashboard.">
+        content="Group60 Web Scraper — The Investigator. Dense, report-style site trust analysis dashboard powered by ScamShield AI.">
     <title>Group60 // The Investigator</title>
 
     <!-- Google Fonts -->
@@ -42,7 +42,7 @@
                 </div>
             </div>
             <div class="top-bar-center">
-                <span class="concept-badge">Concept 1 — The Investigator</span>
+                <span class="concept-badge">ScamShield AI — The Investigator</span>
                 <span class="concept-desc">Dense, report-style layout. Power users &amp; researchers. Everything visible at once.</span>
             </div>
             <div class="top-bar-right">
@@ -64,7 +64,7 @@
                 </button>
                 <div class="header-badge">
                     <span class="live-dot"></span>
-                    <span>Agent Online</span>
+                    <span id="agent-status-text">Agent Online</span>
                 </div>
                 <span class="clock" id="header-clock"></span>
             </div>
@@ -111,7 +111,7 @@
         <!-- ───── DASHBOARD GRID (all panels visible at once) ───── -->
         <div class="dashboard-grid" id="dashboard-grid">
 
-            <!-- ROW 1: Trust Score + Trust Heatmap -->
+            <!-- ROW 1: Trust Score + Trust Heatmap + Scraped Data -->
             <section class="panel panel-score" id="panel-score">
                 <div class="panel-label">TRUST SCORE</div>
                 <div class="score-display">
@@ -125,6 +125,7 @@
                     <div class="score-meta">
                         <span class="score-label">out of 100</span>
                         <span class="risk-badge" id="risk-badge">—</span>
+                        <span class="confidence-badge" id="confidence-badge"></span>
                     </div>
                 </div>
             </section>
@@ -207,7 +208,26 @@
                 </ul>
             </section>
 
-            <!-- ROW 3: Recommendation + Export / Explain -->
+            <!-- ROW 3: Red Flags + Positive Findings -->
+            <section class="panel panel-red-flags" id="panel-red-flags">
+                <div class="panel-label">
+                    <span class="flag-icon-label">⚑</span> RED FLAGS
+                </div>
+                <ul class="flags-list" id="red-flags-list">
+                    <li class="flags-empty">No data yet</li>
+                </ul>
+            </section>
+
+            <section class="panel panel-positive" id="panel-positive">
+                <div class="panel-label">
+                    <span class="positive-icon-label">✓</span> POSITIVE FINDINGS
+                </div>
+                <ul class="flags-list positive" id="positive-list">
+                    <li class="flags-empty">No data yet</li>
+                </ul>
+            </section>
+
+            <!-- ROW 4: Recommendation + Actions -->
             <section class="panel panel-recommendation" id="panel-recommendation">
                 <div class="panel-label">RECOMMENDATION</div>
                 <div class="rec-badge-wrap">
@@ -251,10 +271,10 @@
                 </div>
             </section>
 
-            <!-- ROW 4: Full-width Extraction Table -->
+            <!-- ROW 5: Full-width Extraction Table -->
             <section class="panel panel-table" id="panel-table">
                 <div class="panel-table-header">
-                    <div class="panel-label">EXTRACTED PRODUCTS TABLE</div>
+                    <div class="panel-label" id="table-label">EXTRACTED PRODUCTS TABLE</div>
                     <div class="table-meta" id="table-meta"></div>
                 </div>
                 <div class="table-wrap" id="table-wrap">
@@ -271,7 +291,7 @@
         <footer class="site-footer" id="site-footer">
             <span>Group60 Web Scraper &middot; The Investigator</span>
             <span class="footer-sep">&bull;</span>
-            <span>AI-Powered Trust Analysis &amp; Data Extraction</span>
+            <span>ScamShield AI — Fraud Detection &amp; Trust Analysis</span>
             <span class="footer-sep">&bull;</span>
             <span id="footer-clock"></span>
         </footer>
@@ -286,6 +306,19 @@
                 <button class="modal-close" id="modal-close">&times;</button>
             </div>
             <pre class="json-block" id="json-output"></pre>
+        </div>
+    </div>
+
+    <!-- Grandmother Explanation Modal -->
+    <div class="modal-overlay hidden" id="explain-modal">
+        <div class="modal-content modal-explain">
+            <div class="modal-header">
+                <span class="panel-label">💛 EXPLAIN LIKE MY GRANDMOTHER</span>
+                <button class="modal-close" id="explain-modal-close">&times;</button>
+            </div>
+            <div class="explain-body" id="explain-body">
+                <p id="explain-text">No explanation available yet. Run an investigation first!</p>
+            </div>
         </div>
     </div>
 
