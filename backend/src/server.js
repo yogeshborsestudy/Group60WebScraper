@@ -16,9 +16,12 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// ── Serve frontend static files ──
-const frontendPath = path.join(__dirname, '..', '..', 'frontend');
-app.use(express.static(frontendPath));
+// ── Serve frontend static files securely from root ──
+const rootPath = path.join(__dirname, '..', '..');
+app.get('/', (req, res) => res.sendFile(path.join(rootPath, 'index.html')));
+app.get('/index.html', (req, res) => res.sendFile(path.join(rootPath, 'index.html')));
+app.get('/app.js', (req, res) => res.sendFile(path.join(rootPath, 'app.js')));
+app.get('/styles.css', (req, res) => res.sendFile(path.join(rootPath, 'styles.css')));
 
 // ── Health Check ──
 app.get('/api/health', (req, res) => {
@@ -30,7 +33,7 @@ app.use('/api', investigateRoute);
 
 // ── Catch-all: serve index.html for any non-API route ──
 app.get('*', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
+  res.sendFile(path.join(rootPath, 'index.html'));
 });
 
 // ── Start Server ──

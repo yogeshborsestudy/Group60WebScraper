@@ -44,5 +44,5 @@ logs/
 .agents/
 
 # Netlify generated files
-frontend/_redirects
+_redirects
 

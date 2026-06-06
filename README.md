@@ -6,10 +6,10 @@ A premium cybernetic-themed frontend template for a web scraping application. Bu
 
 ```
 Group60WebScraper/
-├── frontend/              ← Website source code
-│   ├── index.html         ← App layout & all panels
-│   ├── styles.css         ← Cybernetic design system & component styles
-│   └── app.js             ← Interactive logic, simulations, exporters
+├── index.html             ← App layout & all panels (root)
+├── styles.css             ← Cybernetic design system & component styles (root)
+├── app.js                 ← Interactive logic, simulations, exporters (root)
+├── backend/               ← Express backend directory
 └── README.md
 ```
 
@@ -26,18 +26,17 @@ Group60WebScraper/
 
 ## Running Locally
 
-No build step needed — just serve the `frontend/` directory with any static file server.
+No build step needed — just serve the root directory with any static file server.
 
 **Option 1 — Python (built-in):**
 ```bash
-cd frontend
 python -m http.server 8000
 ```
 Then open [http://localhost:8000](http://localhost:8000).
 
 **Option 2 — Node `http-server`:**
 ```bash
-npx http-server frontend -p 8000
+npx http-server . -p 8000
 ```
 
 ## Backend Integration
@@ -64,7 +63,7 @@ Netlify hosts static files. Because this project has a Node/Express backend (`ba
 2. Select your repository.
 3. Netlify will read the root `netlify.toml` file automatically. It will use the following default configurations:
    - **Build command**: `node build-redirects.js`
-   - **Publish directory**: `frontend`
+   - **Publish directory**: `.` (or leave blank)
 4. Before clicking Deploy, go to the site's environment variables settings:
    - Click **Add variable**.
    - Set the key to **`BACKEND_URL`**.

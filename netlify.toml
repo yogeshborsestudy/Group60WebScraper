@@ -1,6 +1,6 @@
 [build]
   command = "node build-redirects.js"
-  publish = "frontend"
+  publish = "."
 
 [[headers]]
   for = "/*"
