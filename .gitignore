@@ -42,3 +42,7 @@ logs/
 
 # Antigravity IDE agent metadata
 .agents/
+
+# Netlify generated files
+frontend/_redirects
+

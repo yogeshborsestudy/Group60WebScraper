@@ -48,6 +48,29 @@ The frontend is designed to be a drop-in template. All scraper logic is currentl
 2. Replace `generateMockIngestionData()` with the parsed API response.
 3. The `renderDataTable()` and `renderJSONPreview()` methods will handle displaying any data structure you pass in.
 
+## Netlify Deployment
+
+This project is prepared for easy frontend deployment to **Netlify** using GitHub integration.
+
+### Prerequisites
+
+Netlify hosts static files. Because this project has a Node/Express backend (`backend/`), you must:
+1. Deploy the backend to a platform like [Render](https://render.com/), [Railway](https://railway.app/), or [Fly.io](https://fly.io/).
+2. Keep the backend URL handy (e.g., `https://your-backend.onrender.com`).
+
+### Deploying the Frontend
+
+1. Log in to [Netlify](https://app.netlify.com/) and click **Add new site** -> **Import an existing project** -> **GitHub**.
+2. Select your repository.
+3. Netlify will read the root `netlify.toml` file automatically. It will use the following default configurations:
+   - **Build command**: `node build-redirects.js`
+   - **Publish directory**: `frontend`
+4. Before clicking Deploy, go to the site's environment variables settings:
+   - Click **Add variable**.
+   - Set the key to **`BACKEND_URL`**.
+   - Set the value to your deployed backend API URL (e.g., `https://your-backend.onrender.com`).
+5. Trigger a deployment. Netlify will run `build-redirects.js` during build to configure proxy redirects, routing `/api/*` requests seamlessly to your backend API.
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -56,3 +79,4 @@ The frontend is designed to be a drop-in template. All scraper logic is currentl
 | Styling | Vanilla CSS3 (custom design system) |
 | Logic | Vanilla JavaScript (ES6+ classes) |
 | Fonts | Google Fonts (Syne, Outfit, JetBrains Mono, Share Tech Mono) |
+
