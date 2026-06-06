@@ -39,6 +39,8 @@ function generateExcelBuffer(data) {
     ['SCRAPED SITE SIGNAL', 'VALUE / STATUS'],
     ['Domain Age', data.scraped_site_data?.domain_age || '—'],
     ['Registrar', data.scraped_site_data?.registrar || '—'],
+    ['WHOIS Data (DomScan)', data.scraped_site_data?.whois_data || '—'],
+    ['Jurisdiction (Firecrawl)', data.scraped_site_data?.jurisdiction || '—'],
     ['SSL Status', data.scraped_site_data?.ssl_status || '—'],
     ['Legal Compliance Check', data.scraped_site_data?.legal_compliance || '—'],
     ['Contact Page', data.scraped_site_data?.contact_page || '—'],

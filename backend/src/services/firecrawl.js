@@ -87,7 +87,8 @@ async function investigateSite(url) {
             termsOfServiceLinkOrStatus: { type: 'string', description: 'The exact URL/path, link text, or a snippet of where the Terms of Service is found. Return "Not found" if absent.' },
             refundPolicyLinkOrStatus:   { type: 'string', description: 'The exact URL/path, link text, or a snippet of where the Refund/Return Policy is found. Return "Not found" if absent.' },
             urgencyLanguage:            { type: 'boolean' },
-            guaranteeLanguage:          { type: 'boolean' }
+            guaranteeLanguage:          { type: 'boolean' },
+            jurisdiction:               { type: 'string', description: 'The governing law, legal jurisdiction, or state/country of registration/operation mentioned in the text (e.g., California, USA, or Delaware). Return "Unknown" if not mentioned.' }
           }
         }
       }
@@ -118,7 +119,8 @@ async function investigateSite(url) {
               physicalAddress: { type: 'string' },
               phoneNumber:     { type: 'string' },
               emailAddress:    { type: 'string' },
-              teamMembers:     { type: 'array', items: { type: 'string' } }
+              teamMembers:     { type: 'array', items: { type: 'string' } },
+              jurisdiction:    { type: 'string', description: 'The legal jurisdiction or country/state of registration.' }
             }
           }
         }
@@ -191,6 +193,7 @@ async function investigateSite(url) {
   // ── Build and return result ──
   const physicalAddress = contactData.physicalAddress || extracted.physicalAddress || null;
   const contactEmail = contactData.emailAddress || extracted.contactEmail || null;
+  const jurisdiction = contactData.jurisdiction || extracted.jurisdiction || 'Unknown';
 
   // Determine legal compliance status
   const hasPrivacy = !!extracted.hasPrivacyPolicy || 
@@ -233,6 +236,7 @@ async function investigateSite(url) {
     physicalAddress,
     contactEmail,
     businessName: extracted.businessName || null,
+    jurisdiction,
     products: (extracted.products || []).slice(0, 10),
     rawMarkdown,
     allUrls,

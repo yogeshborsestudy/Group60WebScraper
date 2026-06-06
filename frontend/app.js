@@ -73,6 +73,8 @@
         social:    document.getElementById('data-social'),
         pages:     document.getElementById('data-pages'),
         tech:      document.getElementById('data-tech'),
+        whois:     document.getElementById('data-whois'),
+        jurisdiction: document.getElementById('data-jurisdiction'),
     };
 
     // ── State ──
@@ -185,6 +187,12 @@
             case 'tech':
                 if (v === 'unknown') return 'warn';
                 return 'ok';
+            case 'whois':
+                if (!v || v.includes('unknown') || v === '—') return 'warn';
+                return '';
+            case 'jurisdiction':
+                if (!v || v.includes('unknown') || v === '—') return 'warn';
+                return 'ok';
             default:
                 return '';
         }
@@ -255,6 +263,8 @@
             social:    siteData.social_links || '—',
             pages:     siteData.page_count   || '—',
             tech:      siteData.tech_stack   || '—',
+            whois:     siteData.whois_data     || '—',
+            jurisdiction: siteData.jurisdiction || 'Unknown',
         };
 
         Object.keys(mapping).forEach(function (key) {

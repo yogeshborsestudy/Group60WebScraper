@@ -92,13 +92,13 @@ SAFETY RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 NEVER:
-  - Invent domain ages, LEGAL COMPLIANCE status, or SSL details (use the exact verified values provided in the prompt)
+  - Invent domain ages, LEGAL COMPLIANCE status, SSL details, WHOIS data, or jurisdiction (use the exact verified values provided in the prompt)
   - Fabricate reviews or business registrations
   - Claim certainty without scraped/provided evidence
   - Return anything outside the JSON structure
 
 ALWAYS:
-  - Base every score on evidence from scraped content and provided domain registry details (domain age, registrar)
+  - Base every score on evidence from scraped content, domain registry details (domain age, registrar), WHOIS records, and jurisdiction
   - Use null for any field you cannot verify
   - Lower confidence score when data is incomplete
   - Distinguish facts from inferences in report bullets
@@ -125,6 +125,45 @@ function formatDomainAge(ageDays) {
 }
 
 /**
+ * Format raw domscanResult into a detailed summary string
+ * @param {object} domscanResult
+ * @returns {string}
+ */
+function formatWhoisData(domscanResult) {
+  if (!domscanResult) return 'Unknown';
+  const parts = [];
+
+  if (domscanResult.privacy) {
+    if (domscanResult.privacy.is_private) {
+      parts.push(`Privacy: Private (${domscanResult.privacy.privacy_service || 'Yes'})`);
+    } else {
+      parts.push('Privacy: Public');
+    }
+  }
+
+  if (domscanResult.expiry_date) {
+    const dateStr = domscanResult.expiry_date.split('T')[0];
+    const daysLeft = domscanResult.days_until_expiry !== undefined && domscanResult.days_until_expiry !== null
+      ? ` (${domscanResult.days_until_expiry} days left)`
+      : '';
+    parts.push(`Expires: ${dateStr}${daysLeft}`);
+  }
+
+  if (domscanResult.contacts) {
+    const org = domscanResult.contacts.registrant_org;
+    const country = domscanResult.contacts.registrant_country;
+    if (org) parts.push(`Org: ${org}`);
+    if (country) parts.push(`Country: ${country}`);
+  }
+
+  if (domscanResult.status && domscanResult.status.length > 0) {
+    parts.push(`Status: ${domscanResult.status.join(', ')}`);
+  }
+
+  return parts.length > 0 ? parts.join(' | ') : 'No detailed WHOIS record';
+}
+
+/**
  * Build the user prompt from scraped data
  */
 function buildUserPrompt(data) {
@@ -132,12 +171,15 @@ function buildUserPrompt(data) {
 
   const ageStr = data.domscanResult ? formatDomainAge(data.domscanResult.age_days) : 'Unknown';
   const registrarStr = data.domscanResult?.registrar || 'Unknown';
+  const whoisDataStr = formatWhoisData(data.domscanResult);
 
   return `Analyze this website data and return a complete trust assessment.
 
 Website URL: ${data.url}
 Verified Domain Age: ${ageStr}
 Verified Domain Registrar: ${registrarStr}
+Verified WHOIS Data: ${whoisDataStr}
+Verified Jurisdiction: ${data.jurisdiction || 'Unknown'}
 Page count: ${data.pageCount}
 Tech stack: ${data.techStack}
 SSL Basic Status: ${data.sslStatus}
@@ -183,6 +225,8 @@ Return ONLY this exact JSON structure (no text outside it):
     "scraped_site_data": {
       "domain_age": ${JSON.stringify(ageStr)},
       "registrar": ${JSON.stringify(registrarStr)},
+      "whois_data": ${JSON.stringify(whoisDataStr)},
+      "jurisdiction": ${JSON.stringify(data.jurisdiction || 'Unknown')},
       "contact_page": <"Found"|"Not found">,
       "page_count": <string, e.g. "22 pages crawled">,
       "ssl_status": <string, summarizing status, issuer, and days left, e.g., "Valid (Cloudflare, 84 days left)" or "Expired" or "No HTTPS detected">,
